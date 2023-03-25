@@ -48,12 +48,11 @@ public class CrListener {
                     break;
                 }
                 if (StringUtils.isBlank(md)) {
+                    // 转义红包对象
+                    CrRedPacket crRedPacket = JSON.parseObject(content, CrRedPacket.class);
                     // 获取消息类型
-                    String msgType = crMsg.getType();
-                    // 红包
-                    if (StringUtils.isNotBlank(msgType) && "redPacket".equals(msgType)) {
-                        // 转义红包对象
-                        CrRedPacket crRedPacket = JSON.parseObject(content, CrRedPacket.class);
+                    String msgType = crRedPacket.getMsgType();
+                    if (StringUtils.isNotBlank(msgType) && Objects.equals("redPacket", msgType)) {
                         // 红包类型
                         String type = crRedPacket.getType();
                         // 打印消息
@@ -63,7 +62,7 @@ public class CrListener {
                         // 是专属 且是精灵的 且红包金额大于 31. 防止负数积分 ... 嘿嘿
                         if ("specify".equals(type) && crRedPacket.getRecivers().contains(Objects.requireNonNull(RedisUtil.get(Const.ELVES_MAME))) && money > 31) {
                             // 购买神秘代码
-                            fService.recordMysteryCode(oId, crRedPacket.getSenderId(), money);
+                            fService.recordMysteryCode(oId, userName, money);
                         }
                     }
                     // 记录消息
