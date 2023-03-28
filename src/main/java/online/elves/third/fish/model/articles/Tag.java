@@ -21,7 +21,7 @@ public class Tag {
     private Double tagRandomDouble;
     private String tagTitle;
     private boolean isReserved;
-    private String oId;
+    private Long oId;
     private String tagURI;
     private String tagAd;
     private Integer tagGoodCnt;

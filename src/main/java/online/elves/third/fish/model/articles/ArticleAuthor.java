@@ -66,7 +66,7 @@ public class ArticleAuthor {
     private String userIntro;
     private String userMobileSkin;
     private Integer userListPageSize;
-    private String oId;
+    private Long oId;
     private String userName;
     private Integer userGeoStatus;
     private Long userLongestCheckinStreakStart;

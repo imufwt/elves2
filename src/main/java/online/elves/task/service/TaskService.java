@@ -12,8 +12,7 @@ import online.elves.mapper.entity.User;
 import online.elves.service.FService;
 import online.elves.third.fish.Fish;
 import online.elves.third.fish.model.FResp;
-import online.elves.third.fish.model.articles.Articles;
-import online.elves.third.fish.model.articles.ArticlesObj;
+import online.elves.third.fish.model.articles.*;
 import online.elves.utils.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -141,12 +140,12 @@ public class TaskService {
         // 获取新人报道对象
         FResp resp = Fish.getArticlesTag("新人报道", 0, 1, 5);
         if (resp.isOk()) {
-            ArticlesObj obj = (ArticlesObj) resp.getData();
+            ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
             collectOids(oids, obj);
         }
         resp = Fish.getArticlesTag("新人报到", 0, 1, 5);
         if (resp.isOk()) {
-            ArticlesObj obj = (ArticlesObj) resp.getData();
+            ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
             collectOids(oids, obj);
         }
         // 不应该为空的
@@ -173,6 +172,106 @@ public class TaskService {
         }
         // 写入最大的 oid
         RedisUtil.set(lastKey, oids.stream().max(Long::compare).get().toString());
+    }
+    
+    /**
+     * 检查新人报道
+     * 使用最近帖子, 循环获取最近五十个帖子, 然后检查标题和标签
+     * 符合就回复
+     */
+    public void runCheck1() {
+        log.info("...检查新人报道 1.0 ...");
+        // 遍历文章列表
+        List<Long> ids = Lists.newArrayList();
+        // 获取最近帖子列表 五分钟 20个应该OK吧? 新人不会一起这么报道吧???
+        FResp resp = Fish.getArticlesRecent(1, 20);
+        if (resp.isOk()) {
+            ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
+            collectOids(ids, obj);
+        }
+        // 不应该为空的
+        if (CollUtil.isEmpty(ids)) {
+            log.info("未获取到 新人报道 / 新人报到 列表...请及时检查");
+            return;
+        }
+        // 遍历文章列表 回帖
+        for (Long id : ids) {
+            // 回帖
+            checkReply(id);
+        }
+        log.info("...检查新人报道 1.0 结束...");
+    }
+    
+    /**
+     * 检查文章是否是新人报道
+     * 是的话  检查是否已经回复
+     * 没有的话就回复一下
+     * @param id
+     */
+    private void checkReply(Long id) {
+        // 获取文章详细内容
+        FResp resp = Fish.getArticle(id);
+        if (resp.isOk()) {
+            // 反序列化
+            ArticleObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticleObj.class);
+            // 获取文章
+            Article article = obj.getArticle();
+            // 评论人
+            if (hasReply(article.getArticleComments())) {
+                // 已经回复过了
+                log.info("文章...OID:{}...已经评论", id);
+                return;
+            }
+            // 是否是新人报道
+            boolean isNew = false;
+            // 检查标题是否包含新人报道
+            if (hasNewMsg(article.getArticleTitle())) {
+                // 是的话就回复
+                reply(id);
+                // 然后返回继续
+                return;
+            }
+            // 检查标签是否包含新人报道
+            if (hasNewMsg(article.getArticleTags())) {
+                // 是的话就回复
+                reply(id);
+                // 然后返回继续
+                return;
+            }
+            // 检查内容是否包含新人报道
+            if (hasNewMsg(article.getArticleOriginalContent())) {
+                // 是的话就回复
+                reply(id);
+                // 然后返回继续
+                return;
+            }
+        }
+        log.info("文章...OID:{}...获取详情失败", id);
+    }
+    
+    /**
+     * 是否包含特定文本
+     * @param str
+     * @return
+     */
+    private boolean hasNewMsg(String str) {
+        return str.contains("新手报道") || str.contains("新手报到") || str.contains("新人报道") || str.contains("新人报到");
+    }
+    
+    /**
+     * 是否自己已经回复过了
+     * @param articleComments
+     * @return
+     */
+    private boolean hasReply(List<ArticleComments> articleComments) {
+        // 遍历评论
+        for (ArticleComments ac : articleComments) {
+            // 有精灵回复过 就直接返回
+            if (Objects.equals(ac.getCommentAuthorName(), RedisUtil.get(Const.ELVES_MAME))) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**

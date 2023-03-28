@@ -44,10 +44,6 @@ public class FResp {
     private int sum;
     
     /**
-     * 随机文章列表???
-     */
-    private List<Articles> articles;
-    /**
      * 接口响应
      * @return
      */

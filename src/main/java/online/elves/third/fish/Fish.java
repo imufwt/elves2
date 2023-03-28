@@ -228,21 +228,39 @@ public class Fish {
     }
     
     /**
+     * 获取 指定 文章
+     */
+    public static FResp getArticle(Long oid) {
+        // 拼接 uri
+        String uri = "https://fishpi.cn/api/article/" + oid + "?apiKey=";
+        return FUtil.get(uri, getKey());
+    }
+    
+    /**
+     * 获取最近文章列表
+     */
+    public static FResp getArticlesRecent(int p, int size) {
+        // 拼接 uri
+        String uri = "https://fishpi.cn/api/articles/recent?p=" + (Math.max(p, 1)) + "&size=" + (Math.max(size, 1)) + "&apiKey=";
+        return FUtil.get(uri, getKey());
+    }
+    
+    /**
      * 根据 标签 获取文章
      */
     public static FResp getArticlesTag(String tag, int model, int p, int size) {
         // 拼接 uri
-        String uri = "https://fishpi.cn/api/articles/tag/" + URLUtil.encode(tag) + sm(model) + "p=" + (p < 1 ? 1 : p) + "&size=" + (size < 1 ? 1 : size) + "&apiKey=";
+        String uri = "https://fishpi.cn/api/articles/tag/" + URLUtil.encode(tag) + sm(model) + "p=" + (Math.max(p, 1)) + "&size=" + (Math.max(size, 1)) + "&apiKey=";
         return FUtil.get(uri, getKey());
     }
     
     /**
      * 随机获取指定篇数的文章
      */
-    public static FResp getArticlesRandom(int size) {
+    public static String getArticlesRandom(int size) {
         // 拼接 uri
         String uri = "https://fishpi.cn/article/random/" + size + "?_=" + System.currentTimeMillis();
-        return FUtil.get(uri, getKey());
+        return FUtil.getSpec(uri, getKey());
     }
     
     /**

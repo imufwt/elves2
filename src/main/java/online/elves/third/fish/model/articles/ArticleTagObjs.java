@@ -19,7 +19,7 @@ public class ArticleTagObjs {
     private Integer tagBadCnt;
     private Double tagRandomDouble;
     private String tagTitle;
-    private String oId;
+    private Long oId;
     private String tagURI;
     private String tagAd;
     private Integer tagGoodCnt;

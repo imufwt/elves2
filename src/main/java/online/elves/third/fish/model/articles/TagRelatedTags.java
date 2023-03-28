@@ -26,7 +26,7 @@ public class TagRelatedTags {
     
     private String tagTitle;
     
-    private String oId;
+    private Long oId;
     
     private String tagURI;
     

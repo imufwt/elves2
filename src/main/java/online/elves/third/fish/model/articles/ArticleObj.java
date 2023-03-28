@@ -9,14 +9,16 @@ import online.elves.third.fish.model.FPagination;
 import java.util.List;
 
 /**
- * 文章列表对象.
+ * 文章对象.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArticlesObj {
-    private List<Articles> articles;
+public class ArticleObj {
+    
+    private Article article;
+    
     private FPagination pagination;
-    private Tag tag;
+    
 }

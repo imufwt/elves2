@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class ArticleParticipants {
     private String articleParticipantURL;
     private String commentId;
-    private String oId;
+    private Long oId;
     private String articleParticipantName;
     private String articleParticipantThumbnailURL;
 }
