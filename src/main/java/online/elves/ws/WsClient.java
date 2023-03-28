@@ -75,6 +75,8 @@ public class WsClient {
                 String uri = "wss://fishpi.cn/chat-room-channel?apiKey=" + key;
                 // 加入连接
                 session.put(user, Pair.of(maxTime, container.connectToServer(ChatRoom.class, URI.create(uri))));
+                // 开启监听
+                Fish.sendMsg("诶嘿嘿, 小精灵上线啦~ (#^.^#) \n\n > 如果我多次重连, 请BAN了我, 然后艾特下我老板. 谢谢!");
             } else {
                 // 客户端开启
                 String uri = "wss://fishpi.cn/chat-channel?apiKey=" + key + "&toUser=" + user;

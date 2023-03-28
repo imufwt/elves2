@@ -21,11 +21,6 @@ import java.util.Map;
 public class Destiny {
     
     /**
-     * 聚合 api 的 key
-     */
-    private static final String JUHE_KEY = "";
-    
-    /**
      * 获取星座运势
      * @param consName
      * @return
@@ -56,7 +51,7 @@ public class Destiny {
         // 参数对象
         Map<String, Object> params = Maps.newConcurrentMap();
         // api key
-        params.put("key", JUHE_KEY);
+        params.put("key", Const.JU_HE_API);
         // 星座名称
         params.put("consName", consName);
         // 运势类型：today,tomorrow,week,month,year

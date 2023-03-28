@@ -81,3 +81,12 @@ mybatis-plus:
     auto-mapping-behavior: full
     #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-location: classpath*:mapper/**/*Mapper.xml
+
+third-api:
+  mxn:
+    key:
+    secret:
+  cai-yun:
+    key:
+  ju-he:
+    key:

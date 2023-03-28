@@ -1,12 +1,15 @@
 package online.elves.task;
 
+import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.task.service.TaskService;
 import online.elves.third.fish.Fish;
+import online.elves.utils.DateUtil;
 import online.elves.utils.RedisUtil;
 import online.elves.ws.WsClient;
+import online.elves.ws.handler.UserChat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,8 +17,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.websocket.CloseReason;
+import javax.websocket.ContainerProvider;
 import javax.websocket.Session;
-import java.io.IOException;
+import javax.websocket.WebSocketContainer;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -44,6 +49,23 @@ public class TaskCenter {
      */
     @Scheduled(cron = "30 0/2 * * * ?")
     public void check3min() {
+        // 如果对象全部空了
+        if (CollUtil.isEmpty(WsClient.session)) {
+            // 重建
+            WsClient.start(null);
+            try {
+                // 放入频道
+                String elves = RedisUtil.get(Const.ELVES_MAME);
+                // 精灵自己的频道
+                String uri = "wss://fishpi.cn/user-channel?apiKey=" + Fish.getKey();
+                // 建立连接
+                WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+                WsClient.session.put(elves, Pair.of(DateUtil.maxTime(), container.connectToServer(new UserChat(elves), URI.create(uri))));
+            } catch (Exception e) {
+                log.info("精灵 建立 ws 链接失败了...{}", e.getMessage());
+            }
+            return;
+        }
         // 临时对象
         Map<String, Pair<LocalDateTime, Session>> temp = Maps.newConcurrentMap();
         // 遍历
@@ -55,20 +77,20 @@ public class TaskCenter {
             // 五分钟前
             LocalDateTime dt = LocalDateTime.now().minusMinutes(5);
             if (etValue.getKey().isAfter(dt)) {
-                // 回写
-                temp.put(sKey, etValue);
                 try {
                     // 没有过期 发送心跳
                     etValue.getValue().getBasicRemote().sendPing(StandardCharsets.UTF_8.encode("-hb-"));
-                } catch (IOException e) {
-                    log.info("{} session 心跳发送失败...", sKey);
+                    // 发送后回写
+                    temp.put(sKey, etValue);
+                } catch (Exception e) {
+                    log.info("{} session 心跳发送失败...{}", sKey, e.getMessage());
                 }
             } else {
                 // 关闭连接
                 try {
                     etValue.getValue().close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "超时清理"));
-                } catch (IOException e) {
-                    log.info("{} session 关闭失败...", sKey);
+                } catch (Exception e) {
+                    log.info("{} session 关闭失败...{}", sKey, e.getMessage());
                 }
             }
         }
@@ -100,4 +122,5 @@ public class TaskCenter {
             Fish.sendMsg("天降神秘代码开启中. 冲鸭~");
         }
     }
+    
 }

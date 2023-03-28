@@ -1,7 +1,10 @@
 package online.elves.config;
 
 import com.google.common.collect.Lists;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.List;
 /**
  * 常用配置信息
  */
+@Component
 public class Const {
     
     /**
@@ -31,22 +35,49 @@ public class Const {
      */
     public static String ELVES_SECRET = "ELVES_SECRET";
     
+    /* ..................账号密码系列.............开始了............... */
+    @Value("${third-api.mxn.key")
+    private String mxnKey;
     /**
      * 免费 api key
      * https://www.mxnzp.com/doc/list
      */
-    public static String MXN_API_KEY = "";
-    
+    public static String MXN_API_KEY;
+    @PostConstruct
+    public void  getMxnAK(){
+        MXN_API_KEY = mxnKey;
+    }
+    @Value("${third-api.mxn.secret")
+    private String mxnSec;
     /**
      * 免费 api secret
      * https://www.mxnzp.com/doc/list
      */
-    public static String MXN_API_SECRET = "";
-    
+    public static String MXN_API_SECRET;
+    @PostConstruct
+    public void  getMxnAS(){
+        MXN_API_SECRET = mxnSec;
+    }
+    @Value("${third-api.cai-yun.key")
+    private String caiYunKey;
     /**
      * 彩云天气 API
      */
-    public static String CAI_YUN_API = "";
+    public static String CAI_YUN_API;
+    @PostConstruct
+    public void  getCaiYunK(){
+        CAI_YUN_API = caiYunKey;
+    }
+    @Value("${third-api.ju-he.key")
+    private String juHeKey;
+    public static String JU_HE_API;
+    
+    @PostConstruct
+    public void  getJuHeK(){
+        JU_HE_API = juHeKey;
+    }
+    
+    /* ..................账号密码系列.............结束了............... */
     
     /**
      * 星座名称
@@ -56,7 +87,7 @@ public class Const {
     /**
      * 等级名称
      */
-    public static List<String> CHAT_ROOM_LEVEL_NAME = Lists.newArrayList("炼气(人)", "筑基(人)", "金丹(人)", "元婴(人)", "化神(人)", "合体(人)", "大乘(人)", "渡劫(人)", "天仙(仙)", "罗天上仙(仙)", "大罗金仙(仙)", "九天玄仙(仙)", "仙君(仙)", "仙帝(仙)", "人神(神)", "天神(神)", "神王(神)", "天尊(神)", "鸿蒙(神)");
+    public static List<String> CHAT_ROOM_LEVEL_NAME = Lists.newArrayList("炼气修士", "筑基修士", "金丹修士", "元婴修士", "化神修士", "合体修士", "大乘修士", "渡劫修士", "天仙", "罗天上仙", "大罗金仙", "九天玄仙", "仙君", "仙帝", "人神", "天神", "神王", "天尊", "鸿蒙");
     
     /**
      * 宵禁解除 早上八点
