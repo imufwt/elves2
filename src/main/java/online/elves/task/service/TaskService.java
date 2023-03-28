@@ -222,8 +222,6 @@ public class TaskService {
                 log.info("文章...OID:{}...已经评论", id);
                 return;
             }
-            // 是否是新人报道
-            boolean isNew = false;
             // 检查标题是否包含新人报道
             if (hasNewMsg(article.getArticleTitle())) {
                 // 是的话就回复
@@ -245,6 +243,8 @@ public class TaskService {
                 // 然后返回继续
                 return;
             }
+            // 不是新人报道
+            return;
         }
         log.info("文章...OID:{}...获取详情失败", id);
     }
