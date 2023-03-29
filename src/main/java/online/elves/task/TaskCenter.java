@@ -106,8 +106,8 @@ public class TaskCenter {
         // 迎新
         taskService.welcome();
         // 新人报道
-        //taskService.runCheck();
-        taskService.runCheck1();
+        // taskService.runCheck();
+        taskService.runCheckV1();
     }
     
     /**

@@ -100,6 +100,11 @@ public class Const {
     public static LocalTime end = LocalTime.of(19, 30, 0);
     
     /**
+     * 迎新帖子回复记录
+     */
+    public static final String WELCOME_CHECK_REPLY = "CHECK:REPLY";
+    
+    /**
      * 礼物领取状态
      */
     public static String AWARD_STATUS = "fish:award:status";

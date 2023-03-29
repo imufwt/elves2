@@ -9,6 +9,9 @@ import online.elves.config.Cache;
 import online.elves.config.Const;
 import online.elves.third.fish.model.FResp;
 import online.elves.third.fish.model.FUser;
+import online.elves.third.fish.model.articles.Article;
+import online.elves.third.fish.model.articles.ArticleComments;
+import online.elves.third.fish.model.articles.ArticleObj;
 import online.elves.third.fish.utils.FUtil;
 import online.elves.utils.DateUtil;
 import online.elves.utils.EncryptUtil;
@@ -230,9 +233,9 @@ public class Fish {
     /**
      * 获取 指定 文章
      */
-    public static FResp getArticle(Long oid) {
+    public static FResp getArticle(Long oid, int p) {
         // 拼接 uri
-        String uri = "https://fishpi.cn/api/article/" + oid + "?apiKey=";
+        String uri = "https://fishpi.cn/api/article/" + oid + "?p=" + (Math.max(p, 1)) + "&apiKey=";
         return FUtil.get(uri, getKey());
     }
     

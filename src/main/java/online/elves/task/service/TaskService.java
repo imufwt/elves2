@@ -13,11 +13,13 @@ import online.elves.service.FService;
 import online.elves.third.fish.Fish;
 import online.elves.third.fish.model.FResp;
 import online.elves.third.fish.model.articles.*;
+import online.elves.utils.DateUtil;
 import online.elves.utils.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -179,7 +181,7 @@ public class TaskService {
      * 使用最近帖子, 循环获取最近五十个帖子, 然后检查标题和标签
      * 符合就回复
      */
-    public void runCheck1() {
+    public void runCheckV1() {
         log.info("...检查新人报道 1.0 ...");
         // 遍历文章列表
         List<Long> ids = Lists.newArrayList();
@@ -209,15 +211,35 @@ public class TaskService {
      * @param id
      */
     private void checkReply(Long id) {
+        Double score = RedisUtil.getScore(Const.WELCOME_CHECK_REPLY, id.toString());
+        if (Objects.nonNull(score)) {
+            // 已经评论过了
+            log.info("文章...OID:{}...已经评论...{}", id, score);
+            return;
+        }
         // 获取文章详细内容
-        FResp resp = Fish.getArticle(id);
+        FResp resp = Fish.getArticle(id, 1);
         if (resp.isOk()) {
             // 反序列化
             ArticleObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticleObj.class);
             // 获取文章
             Article article = obj.getArticle();
+            // 所有评论列表  初始化第一页
+            List<ArticleComments> comments = Lists.newArrayList(article.getArticleComments());
+            // 多页情况下翻页
+            if (obj.getPagination().getPaginationPageCount() > 1) {
+                // 直接从第二页开始, 相信接口. 默认OK
+                for (int i = 2; i < obj.getPagination().getPaginationPageCount() + 1; i++) {
+                    resp = Fish.getArticle(id, 1);
+                    // 反序列化
+                    obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticleObj.class);
+                    // 获取文章
+                    article = obj.getArticle();
+                    comments.addAll(article.getArticleComments());
+                }
+            }
             // 评论人
-            if (hasReply(article.getArticleComments())) {
+            if (hasReply(id, comments)) {
                 // 已经回复过了
                 log.info("文章...OID:{}...已经评论", id);
                 return;
@@ -260,14 +282,18 @@ public class TaskService {
     
     /**
      * 是否自己已经回复过了
-     * @param articleComments
+     * @param comments
      * @return
      */
-    private boolean hasReply(List<ArticleComments> articleComments) {
+    private boolean hasReply(Long id, List<ArticleComments> comments) {
         // 遍历评论
-        for (ArticleComments ac : articleComments) {
+        for (ArticleComments ac : comments) {
             // 有精灵回复过 就直接返回
             if (Objects.equals(ac.getCommentAuthorName(), RedisUtil.get(Const.ELVES_MAME))) {
+                // 评论创建时间
+                LocalDate crDate = Objects.requireNonNull(DateUtil.parseLdt(ac.getCommentCreateTimeStr())).toLocalDate();
+                // 记录回复记录
+                RedisUtil.incrScore(Const.WELCOME_CHECK_REPLY, id.toString(), Long.valueOf(crDate.toEpochDay()).intValue());
                 return true;
             }
         }
@@ -314,6 +340,8 @@ public class TaskService {
                 "> 当然我也有一些好玩的功能, 你可以去[聊天室](https://fishpi.cn/cr)使用指令 `凌 菜单` 或 `凌 帮助` 来查看一些指令, 祝你在摸鱼派摸的开心❤️️；";
         // 回复评论
         Fish.comment(id, content);
+        // 记录回复记录
+        RedisUtil.incrScore(Const.WELCOME_CHECK_REPLY, id.toString(), Long.valueOf(LocalDate.now().toEpochDay()).intValue());
     }
     
     /**
