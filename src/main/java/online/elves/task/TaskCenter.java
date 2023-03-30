@@ -123,4 +123,12 @@ public class TaskCenter {
         }
     }
     
+    /**
+     * 每日活动 随机猜拳
+     */
+    @Scheduled(cron = "0 30 9,10,15,16 * * ?")
+    public void redPacket() {
+        Fish.sendRockPaperScissors(null, 64);
+    }
+    
 }
