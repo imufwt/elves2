@@ -338,23 +338,6 @@ public class FService {
     }
     
     /**
-     * 是否说过话
-     * @param userNo
-     * @return
-     */
-    public boolean hasMsgRecord(Integer userNo) {
-        // 查询条件
-        QueryWrapper<MsgRecord> cond = new QueryWrapper<>();
-        cond.eq("user_no", userNo);
-        // 只需要一条就行
-        cond.last(" limit 1");
-        // 是否说过话
-        List<MsgRecord> records = msgRecordMapper.selectList(cond);
-        // 不为空
-        return CollUtil.isNotEmpty(records);
-    }
-    
-    /**
      * 购买神秘代码
      * @param oId
      * @param userName

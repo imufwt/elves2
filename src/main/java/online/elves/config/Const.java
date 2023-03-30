@@ -38,42 +38,52 @@ public class Const {
     /* ..................账号密码系列.............开始了............... */
     @Value("${third-api.mxn.key")
     private String mxnKey;
+    
     /**
      * 免费 api key
      * https://www.mxnzp.com/doc/list
      */
     public static String MXN_API_KEY;
+    
     @PostConstruct
-    public void  getMxnAK(){
+    public void getMxnAK() {
         MXN_API_KEY = mxnKey;
     }
+    
     @Value("${third-api.mxn.secret")
     private String mxnSec;
+    
     /**
      * 免费 api secret
      * https://www.mxnzp.com/doc/list
      */
     public static String MXN_API_SECRET;
+    
     @PostConstruct
-    public void  getMxnAS(){
+    public void getMxnAS() {
         MXN_API_SECRET = mxnSec;
     }
+    
     @Value("${third-api.cai-yun.key")
     private String caiYunKey;
+    
     /**
      * 彩云天气 API
      */
     public static String CAI_YUN_API;
+    
     @PostConstruct
-    public void  getCaiYunK(){
+    public void getCaiYunK() {
         CAI_YUN_API = caiYunKey;
     }
+    
     @Value("${third-api.ju-he.key")
     private String juHeKey;
+    
     public static String JU_HE_API;
     
     @PostConstruct
-    public void  getJuHeK(){
+    public void getJuHeK() {
         JU_HE_API = juHeKey;
     }
     
@@ -103,6 +113,11 @@ public class Const {
      * 迎新帖子回复记录
      */
     public static final String WELCOME_CHECK_REPLY = "CHECK:REPLY";
+    
+    /**
+     * 聊天室新人欢迎
+     */
+    public static final String CHAT_ROOM_WELCOME = "CHECK:CHAT:ROOM:WELCOME";
     
     /**
      * 礼物领取状态

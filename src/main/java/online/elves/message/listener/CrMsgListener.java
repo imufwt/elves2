@@ -15,8 +15,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 /**
  * 聊天室消息监听
@@ -34,9 +36,8 @@ public class CrMsgListener {
         Integer userNo = event.getUserNo();
         // 事件消息 发送人
         String userName = event.getSource().toString();
-        // 不存在消息, 没说过话的用户编号大于12345, 都当是新人吧~
-        boolean hasMsg = fService.hasMsgRecord(userNo);
-        if (userNo > 12345 && !hasMsg) {
+        // 不存在消息, 没说过话的用户编号大于12863 2023年03月30日17:21:40 时的最后一个人, 都当是新人吧~
+        if (userNo > 12863 && isNew(userNo)) {
             welcome(userNo, userName);
         } else {
             halo(userNo, userName);
@@ -74,6 +75,8 @@ public class CrMsgListener {
         content.append("> 当然我也有一些好玩的功能, 你可以使用指令 `凌 菜单` 或 `凌 帮助` 来查看一些指令, 祝你在摸鱼派摸的开心❤️").append(" \n\n ");
         // 发送消息
         Fish.sendMsg(content.toString());
+        // 欢迎之后 写入记录
+        RedisUtil.incrScore(Const.CHAT_ROOM_WELCOME, userNo.toString(), Long.valueOf(LocalDate.now().toEpochDay()).intValue());
     }
     
     /**
@@ -111,6 +114,19 @@ public class CrMsgListener {
                 RedisUtil.set(Const.LAST_HALO_PREFIX + userNo, day);
             }
         }
+    }
+    
+    /**
+     * 是否是聊天室新人
+     * @param userNo
+     * @return
+     */
+    private boolean isNew(Integer userNo) {
+        Double score = RedisUtil.getScore(Const.CHAT_ROOM_WELCOME, userNo.toString());
+        if (Objects.nonNull(score)) {
+            return false;
+        }
+        return true;
     }
     
     /**
