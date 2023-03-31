@@ -10,6 +10,7 @@ import online.elves.third.apis.Joke;
 import online.elves.third.fish.Fish;
 import online.elves.utils.LotteryUtil;
 import online.elves.utils.RedisUtil;
+import online.elves.utils.StrUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +18,7 @@ import javax.annotation.Resource;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * 娱乐命令分析
@@ -137,7 +135,21 @@ public class FunnyAnalysis extends CommandAnalysis {
                 }
                 break;
             case "等级":
-                Fish.sendMsg("亲爱的 @" + userName + " 您的聊天室等级为 " + CrLevel.getCrLvName(userName) + " " + " \n\n > 等级分为 " + String.join(" => ", Const.CHAT_ROOM_LEVEL_NAME));
+                // 用户编码
+                Integer userNo = Fish.getUserNo(userName);
+                // 缓存key
+                String key = StrUtils.getKey(Const.RANKING_PREFIX, "24");
+                // 获取得分
+                Double score = RedisUtil.getScore(key, userNo + "");
+                // 不存在就赋值 0
+                if (Objects.isNull(score)) {
+                    score = Double.valueOf("0");
+                }
+                // 当前经验
+                int exp = score.intValue();
+                // 当前等级
+                CrLevel crLv = CrLevel.get(exp);
+                Fish.sendMsg("亲爱的 @" + userName + " 您的聊天室等级为 " + CrLevel.getCrLvName(userName) + " [当前经验值: " + exp + "/" + crLv.end + "] " + " \n\n > 等级分为 " + String.join(" => ", Const.CHAT_ROOM_LEVEL_NAME));
                 break;
             default:
                 // 什么也不用做

@@ -69,6 +69,23 @@ public enum CrLevel {
      * @param exp
      * @return
      */
+    public static CrLevel get(Integer exp) {
+        if (Objects.nonNull(exp)) {
+            // 遍历等级
+            for (CrLevel c : CrLevel.values()) {
+                if (NumUtils.isBetween(exp, c.start, c.end)) {
+                    return c;
+                }
+            }
+        }
+        return Lv_0;
+    }
+    
+    /**
+     * 获取用户聊天室等级
+     * @param exp
+     * @return
+     */
     public static int getCrLv(Integer exp) {
         if (Objects.nonNull(exp)) {
             // 遍历等级

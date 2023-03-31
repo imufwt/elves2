@@ -23,7 +23,7 @@ public class Const {
     /**
      * 机器人列表  小智 小冰 精灵
      */
-    public static List<Integer> ROBOT_LIST = Arrays.asList(4076, 8888, 9036);
+    public static List<Integer> ROBOT_LIST = Arrays.asList(4076, 8888, 521);
     
     /**
      * 小精灵
