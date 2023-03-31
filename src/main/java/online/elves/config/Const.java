@@ -97,7 +97,7 @@ public class Const {
     /**
      * 等级名称
      */
-    public static List<String> CHAT_ROOM_LEVEL_NAME = Lists.newArrayList("炼气修士", "筑基修士", "金丹修士", "元婴修士", "化神修士", "合体修士", "大乘修士", "渡劫修士", "天仙", "罗天上仙", "大罗金仙", "九天玄仙", "仙君", "仙帝", "人神", "天神", "神王", "天尊", "鸿蒙");
+    public static List<String> CHAT_ROOM_LEVEL_NAME = Lists.newArrayList("炼气修士", "筑基修士", "金丹修士", "元婴修士", "化神修士", "合体修士", "大乘修士", "渡劫修士", "天仙", "罗天上仙", "大罗金仙", "九天玄仙", "仙君", "仙帝", "人神", "天神", "神王", "天尊", "鱼祖");
     
     /**
      * 宵禁解除 早上八点
