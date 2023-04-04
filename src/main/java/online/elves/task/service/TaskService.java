@@ -191,6 +191,17 @@ public class TaskService {
             ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
             collectOids(ids, obj);
         }
+        // 获取新人报道对象
+        resp = Fish.getArticlesTag("新人报道", 0, 1, 5);
+        if (resp.isOk()) {
+            ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
+            collectOids(ids, obj);
+        }
+        resp = Fish.getArticlesTag("新人报到", 0, 1, 5);
+        if (resp.isOk()) {
+            ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
+            collectOids(ids, obj);
+        }
         // 不应该为空的
         if (CollUtil.isEmpty(ids)) {
             log.info("未获取到 新人报道 / 新人报到 列表...请及时检查");
