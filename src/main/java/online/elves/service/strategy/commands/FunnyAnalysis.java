@@ -34,7 +34,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包");
     
     /**
      * 打劫概率
@@ -150,6 +150,9 @@ public class FunnyAnalysis extends CommandAnalysis {
                 // 当前等级
                 CrLevel crLv = CrLevel.get(exp);
                 Fish.sendMsg("亲爱的 @" + userName + " 您的聊天室等级为 " + CrLevel.getCrLvName(userName) + " [当前经验值: " + exp + "/" + crLv.end + "] " + " \n\n > 等级分为 " + String.join(" => ", Const.CHAT_ROOM_LEVEL_NAME));
+                break;
+            case "发个红包":
+                Fish.sendMsg("小冰 发个红包");
                 break;
             default:
                 // 什么也不用做
