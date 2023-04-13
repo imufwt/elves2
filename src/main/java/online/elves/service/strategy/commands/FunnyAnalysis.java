@@ -35,7 +35,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50","vivo50");
 
     /**
      * 打劫概率
@@ -156,13 +156,16 @@ public class FunnyAnalysis extends CommandAnalysis {
                 Fish.sendMsg("小冰 发个红包");
                 break;
             case "V50":
+            case "v50":
+            case "VME50":
+            case "vivo50":
                 String cd = "KFC:V:50:CD";
                 if (LocalDate.now().getDayOfWeek().getValue() == 4) {
                     // 幸运编码 每周四
                     String lKey = "KFC:V:50:" + userName;
                     // 每周四只能有一次
                     if (StringUtils.isBlank(RedisUtil.get(lKey))) {
-                        if (StringUtils.isBlank(RedisUtil.get(lKey))){
+                        if (StringUtils.isBlank(RedisUtil.get(cd))) {
                             // 当前时间
                             LocalDateTime now = LocalDateTime.now();
                             // 第二天0点过期
@@ -171,7 +174,9 @@ public class FunnyAnalysis extends CommandAnalysis {
                             RedisUtil.set(cd, userName, 60);
                             // 发红包
                             Fish.sendSpecify(userName, 50, userName + " 给, 彰显实力!");
-                        }else {
+                            // 记录排行榜
+                            RedisUtil.incrScore(Const.RANKING_PREFIX + "KFC", String.valueOf(Fish.getUserNo(userName)), 1);
+                        } else {
                             Fish.sendMsg("@" + userName + " 不要复读, 不要着急. 我一分钟只能发一个哦~");
                         }
                     } else {
