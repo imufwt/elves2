@@ -156,16 +156,24 @@ public class FunnyAnalysis extends CommandAnalysis {
                 Fish.sendMsg("小冰 发个红包");
                 break;
             case "V50":
+                String cd = "KFC:V:50:CD";
                 if (LocalDate.now().getDayOfWeek().getValue() == 4) {
                     // 幸运编码 每周四
                     String lKey = "KFC:V:50:" + userName;
                     // 每周四只能有一次
                     if (StringUtils.isBlank(RedisUtil.get(lKey))) {
-                        // 当前时间
-                        LocalDateTime now = LocalDateTime.now();
-                        // 第二天0点过期
-                        RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
-                        Fish.sendSpecify(userName, 50, userName + "给, 彰显实力!");
+                        if (StringUtils.isBlank(RedisUtil.get(lKey))){
+                            // 当前时间
+                            LocalDateTime now = LocalDateTime.now();
+                            // 第二天0点过期
+                            RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
+                            // CD 1 min
+                            RedisUtil.set(cd, userName, 60);
+                            // 发红包
+                            Fish.sendSpecify(userName, 50, userName + " 给, 彰显实力!");
+                        }else {
+                            Fish.sendMsg("@" + userName + " 不要复读, 不要着急. 我一分钟只能发一个哦~");
+                        }
                     } else {
                         Fish.sendMsg("@" + userName + " 怎么肥事儿~ 已经给你看过鱼排实力啦~");
                     }
