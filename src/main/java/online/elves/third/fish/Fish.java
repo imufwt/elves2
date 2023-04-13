@@ -33,12 +33,12 @@ import java.util.*;
 @Slf4j
 @Component
 public class Fish {
-    
+
     /**
      * 猜拳权重
      */
     private static TreeMap<Integer, Double> RockMap = new TreeMap<>();
-    
+
     /**
      * 默认
      */
@@ -48,9 +48,10 @@ public class Fish {
         RockMap.put(2, Double.valueOf("0.33"));
         RockMap.put(3, Double.valueOf("0.01"));
     }
-    
+
     /**
      * 获取 apiKey
+     *
      * @return
      */
     public static String getKey() {
@@ -86,9 +87,10 @@ public class Fish {
         }
         return key;
     }
-    
+
     /**
      * 获取用户信息
+     *
      * @return
      */
     public static FUser getUser(String userName) {
@@ -99,9 +101,10 @@ public class Fish {
         }
         return null;
     }
-    
+
     /**
      * 获取用户编号
+     *
      * @return
      */
     public static Integer getUserNo(String userName) {
@@ -120,13 +123,16 @@ public class Fish {
         }
         return null;
     }
-    
+
     /**
      * 发送消息
+     *
      * @param content
      * @return
      */
     public static void sendMsg(String content) {
+        // 精灵最后一次发言
+        RedisUtil.set("LAST:WORD", DateUtil.nowStr());
         // 组装对象
         StringBuilder cont = new StringBuilder(content);
         // 查询参数
@@ -144,7 +150,7 @@ public class Fish {
         // 发送消息
         Fish.send(body);
     }
-    
+
     /**
      * 发送专属红包
      */
@@ -172,7 +178,7 @@ public class Fish {
         // 为空就重新获取
         send(body);
     }
-    
+
     /**
      * 发送猜拳红包
      */
@@ -208,7 +214,7 @@ public class Fish {
         // 为空就重新获取
         send(body);
     }
-    
+
     /**
      * 领奖
      */
@@ -229,7 +235,7 @@ public class Fish {
             }
         }
     }
-    
+
     /**
      * 获取 指定 文章
      */
@@ -238,7 +244,7 @@ public class Fish {
         String uri = "https://fishpi.cn/api/article/" + oid + "?p=" + (Math.max(p, 1)) + "&apiKey=";
         return FUtil.get(uri, getKey());
     }
-    
+
     /**
      * 获取最近文章列表
      */
@@ -247,7 +253,7 @@ public class Fish {
         String uri = "https://fishpi.cn/api/articles/recent?p=" + (Math.max(p, 1)) + "&size=" + (Math.max(size, 1)) + "&apiKey=";
         return FUtil.get(uri, getKey());
     }
-    
+
     /**
      * 根据 标签 获取文章
      */
@@ -256,7 +262,7 @@ public class Fish {
         String uri = "https://fishpi.cn/api/articles/tag/" + URLUtil.encode(tag) + sm(model) + "p=" + (Math.max(p, 1)) + "&size=" + (Math.max(size, 1)) + "&apiKey=";
         return FUtil.get(uri, getKey());
     }
-    
+
     /**
      * 随机获取指定篇数的文章
      */
@@ -265,7 +271,7 @@ public class Fish {
         String uri = "https://fishpi.cn/article/random/" + size + "?_=" + System.currentTimeMillis();
         return FUtil.getSpec(uri, getKey());
     }
-    
+
     /**
      * 获取指定类型通知
      */
@@ -274,9 +280,10 @@ public class Fish {
         String uri = "https://fishpi.cn/api/getNotifications?type=" + type + "&apiKey=";
         return FUtil.get(uri, getKey());
     }
-    
+
     /**
      * 评论文章
+     *
      * @param oId
      * @param content
      */
@@ -295,9 +302,10 @@ public class Fish {
         // 请求评论
         FUtil.post("https://fishpi.cn/comment", "", body.toJSONString());
     }
-    
+
     /**
      * 打开红包
+     *
      * @param oId
      * @param gesture 猜拳
      */
@@ -318,9 +326,10 @@ public class Fish {
         // 返回对象
         return FUtil.post("https://fishpi.cn/chat-room/red-packet/open", "", body.toJSONString()).isOk();
     }
-    
+
     /**
      * 给某人发私信
+     *
      * @param user
      * @param content
      */
@@ -350,9 +359,10 @@ public class Fish {
             log.info("私聊失败 {}", e.getMessage());
         }
     }
-    
+
     /**
      * 领取昨日奖励
+     *
      * @return
      */
     public static Boolean award() {
@@ -364,9 +374,10 @@ public class Fish {
         }
         return false;
     }
-    
+
     /**
      * 文章请求后缀
+     *
      * @param model
      * @return
      */
@@ -389,10 +400,11 @@ public class Fish {
                 return "?";
         }
     }
-    
-    
+
+
     /**
      * 发送聊天室消息
+     *
      * @param body
      */
     public static void send(JSONObject body) {
@@ -403,5 +415,5 @@ public class Fish {
             log.error("chat room sendCoupon error ..." + JSON.toJSONString(respObj));
         }
     }
-    
+
 }

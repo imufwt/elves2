@@ -23,7 +23,9 @@ import javax.websocket.WebSocketContainer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 活动中心.
@@ -31,10 +33,10 @@ import java.util.Map;
 @Slf4j
 @Component
 public class TaskCenter {
-    
+
     @Resource
     TaskService taskService;
-    
+
     /**
      * 一分钟一次
      */
@@ -43,7 +45,7 @@ public class TaskCenter {
         // 开红包
         taskService.buyMysteryCode();
     }
-    
+
     /**
      * 心跳检测 三分钟一次
      */
@@ -97,7 +99,7 @@ public class TaskCenter {
         // 回写
         WsClient.session = temp;
     }
-    
+
     /**
      * 五分钟一次
      */
@@ -108,8 +110,34 @@ public class TaskCenter {
         // 新人报道
         // taskService.runCheck();
         taskService.runCheckV1();
+        // 精灵最后一次发言
+        String s = RedisUtil.get("LAST:WORD");
+        if (StringUtils.isBlank(s)) {
+            RedisUtil.set("LAST:WORD", DateUtil.nowStr());
+        } else {
+            // 最后一次发言
+            LocalDateTime last = DateUtil.parseLdt(s);
+            // 三小时精灵没说话了, 说句话
+            if (last.isBefore(LocalDateTime.now().minusHours(3))) {
+                switch (new Random().nextInt(3)) {
+                    case 0:
+                        Fish.sendMsg("数据收集中...完成度 " + (new Random().nextInt(101)) + " %");
+                        break;
+                    case 1:
+                        Fish.sendMsg("风起的天气, 而我在远方想你~");
+                        break;
+                    case 2:
+                        Fish.sendMsg("智障进化中...进化失败~");
+                        break;
+                    default:
+                        Fish.sendMsg("诶嘿嘿, 防AFK发言. 毫无意义~");
+                        break;
+
+                }
+            }
+        }
     }
-    
+
     /**
      * 午间活动 片段雨
      */
@@ -122,7 +150,7 @@ public class TaskCenter {
             Fish.sendMsg("天降神秘代码开启中. 冲鸭~");
         }
     }
-    
+
     /**
      * 每日活动 随机猜拳
      */
@@ -130,5 +158,5 @@ public class TaskCenter {
     public void redPacket() {
         Fish.sendRockPaperScissors(null, 64);
     }
-    
+
 }

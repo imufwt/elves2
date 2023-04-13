@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -26,21 +27,21 @@ import java.util.*;
 @Slf4j
 @Component
 public class FunnyAnalysis extends CommandAnalysis {
-    
+
     @Resource
     FService fService;
-    
-    
+
+
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包");
-    
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50");
+
     /**
      * 打劫概率
      */
     private static TreeMap<Integer, Double> odds = new TreeMap<>();
-    
+
     // 初始化概率
     static {
         // 32-64积分
@@ -54,12 +55,12 @@ public class FunnyAnalysis extends CommandAnalysis {
         // 什么也没有 随机扣1-3片段
         odds.put(4, 0.30);
     }
-    
+
     @Override
     public boolean check(String commonKey) {
         return keys.contains(commonKey);
     }
-    
+
     @Override
     public void process(String commandKey, String commandDesc, String userName) {
         // 娱乐命令
@@ -154,10 +155,28 @@ public class FunnyAnalysis extends CommandAnalysis {
             case "发个红包":
                 Fish.sendMsg("小冰 发个红包");
                 break;
+            case "V50":
+                if (LocalDate.now().getDayOfWeek().getValue() == 4) {
+                    // 幸运编码 每周四
+                    String lKey = "KFC:V:50:" + userName;
+                    // 每周四只能有一次
+                    if (StringUtils.isBlank(RedisUtil.get(lKey))) {
+                        // 当前时间
+                        LocalDateTime now = LocalDateTime.now();
+                        // 第二天0点过期
+                        RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
+                        Fish.sendSpecify(userName, 50, userName + "给, 彰显实力!");
+                    } else {
+                        Fish.sendMsg("@" + userName + " 怎么肥事儿~ 已经给你看过鱼排实力啦~");
+                    }
+                } else {
+                    Fish.sendMsg("@" + userName + " 今儿可不是疯狂星期四. 嘻嘻~ 心急吃不了热豆腐哦.");
+                }
+                break;
             default:
                 // 什么也不用做
                 break;
         }
     }
-    
+
 }
