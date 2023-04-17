@@ -3,6 +3,7 @@ package online.elves.utils;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Maps;
 
+import java.security.SecureRandom;
 import java.util.*;
 
 /**
@@ -13,7 +14,7 @@ public final class LotteryUtil {
     /**
      * 随机数生成对象
      */
-    private final Random random;
+    private final SecureRandom random;
     
     /**
      * 别名
@@ -30,7 +31,7 @@ public final class LotteryUtil {
      * @param probabilities
      */
     public LotteryUtil(List<Double> probabilities) {
-        this(probabilities, new Random());
+        this(probabilities, new SecureRandom());
     }
     
     /**
@@ -38,7 +39,7 @@ public final class LotteryUtil {
      * @param probabilities
      * @param random
      */
-    public LotteryUtil(List<Double> probabilities, Random random) {
+    public LotteryUtil(List<Double> probabilities, SecureRandom random) {
         // 校验参数
         if (CollUtil.isEmpty(probabilities) || Objects.isNull(random)) {
             throw new RuntimeException("初始化概率采集器失败");

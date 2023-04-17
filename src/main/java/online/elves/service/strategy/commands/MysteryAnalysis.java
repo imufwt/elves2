@@ -56,8 +56,6 @@ public class MysteryAnalysis extends CommandAnalysis {
                 } else {
                     // 加锁  增加 CD
                     if (StringUtils.isBlank(RedisUtil.get("MYSTERY_CODE_FIGHT_LIMIT"))) {
-                        // 剩余次数
-                        Integer of = Integer.valueOf(fTimes);
                         // 发送设置
                         Fish.sendMsg("亲爱的 @" + userName + " . 准备好了么? 决斗红包来喽(不能指定, 先到先得) `决斗全局锁, 下次召唤请...30...秒后(一分钟能发俩. 咱们都冷静下)` ~");
                         // 发送猜拳红包
