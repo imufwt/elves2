@@ -8,6 +8,7 @@ import online.elves.service.FService;
 import online.elves.service.strategy.CommandAnalysis;
 import online.elves.third.apis.Joke;
 import online.elves.third.fish.Fish;
+import online.elves.utils.DateUtil;
 import online.elves.utils.LotteryUtil;
 import online.elves.utils.RedisUtil;
 import online.elves.utils.StrUtils;
@@ -35,7 +36,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50","vivo50");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分");
 
     /**
      * 打劫概率
@@ -134,6 +135,21 @@ public class FunnyAnalysis extends CommandAnalysis {
                         Fish.send2User(userName, "你已经参与过啦~ 谢谢财阀");
                     }
                 }
+                break;
+            case "今日水分":
+                // 用户编码
+                Integer userNo_ = Fish.getUserNo(userName);
+                // 缓存key
+                String key_ = StrUtils.getKey(Const.RANKING_DAY_PREFIX, "20", DateUtil.format(new Date(), "yyyyMMdd"));
+                // 获取得分
+                Double score_ = RedisUtil.getScore(key_, userNo_ + "");
+                // 不存在就赋值 0
+                if (Objects.isNull(score_)) {
+                    score_ = Double.valueOf("0");
+                }
+                // 当前经验
+                int exp_ = score_.intValue();
+                Fish.sendMsg("亲爱的 @" + userName + " 你今天水了 [" + exp_ + "] 点经验" + " \n\n > 一起工作的才叫同事, 一起摸鱼的叫同伙~ 加油, 同伙");
                 break;
             case "等级":
                 // 用户编码
