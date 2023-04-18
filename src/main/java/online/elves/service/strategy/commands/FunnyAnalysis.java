@@ -36,7 +36,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25");
 
     /**
      * 打劫概率
@@ -136,6 +136,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                     }
                 }
                 break;
+            case "25":
             case "今日水分":
                 // 用户编码
                 Integer userNo_ = Fish.getUserNo(userName);
@@ -149,7 +150,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                 }
                 // 当前经验
                 int exp_ = score_.intValue();
-                Fish.sendMsg("亲爱的 @" + userName + " 你今天水了 [" + exp_ + "] 点经验" + " \n\n > 一起工作的才叫同事, 一起摸鱼的叫同伙~ 加油, 同伙");
+                Fish.sendMsg("亲爱的 @" + userName + " 你今天水了 [ " + exp_ + " ] 点经验啦~" + " \n\n > 一起工作的才叫同事, 一起摸鱼的叫同伙~ 加油, 同伙");
                 break;
             case "等级":
                 // 用户编码
