@@ -28,10 +28,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class RankingAnalysis extends CommandAnalysis {
-    
+
     @Resource
     FService fService;
-    
+
     /**
      * 关键字
      */
@@ -42,12 +42,12 @@ public class RankingAnalysis extends CommandAnalysis {
             "兑换日榜", "兑换周榜", "兑换月榜", "兑换年榜", "兑换总榜",
             "20", "21", "22", "23", "24",
             "话痨日榜", "话痨周榜", "话痨月榜", "话痨年榜", "话痨总榜");
-    
+
     @Override
     public boolean check(String commonKey) {
         return keys.contains(commonKey);
     }
-    
+
     @Override
     public void process(String commandKey, String commandDesc, String userName) {
         // 默认红包计数器
@@ -134,9 +134,10 @@ public class RankingAnalysis extends CommandAnalysis {
         }
         Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + count(type, RegularUtil.isDate(commandDesc) ? commandDesc : "", isDay));
     }
-    
+
     /**
      * 处理统计
+     *
      * @param i
      * @param date
      * @param isDay
@@ -235,63 +236,37 @@ public class RankingAnalysis extends CommandAnalysis {
                 case 9:
                 case 10:
                 case 20:
-                    String eMsgCommon = getRank10(StrUtils.getKey(Const.RANKING_DAY_PREFIX, i + "", simpleDay), msg, no);
-                    if (eMsgCommon != null) {
-                        return eMsgCommon;
-                    }
-                    break;
+                    return getRank10(StrUtils.getKey(Const.RANKING_DAY_PREFIX, String.valueOf(i), simpleDay), msg, no);
                 case 11:
                 case 21:
-                    String e11Msg = getRank10(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, i + "", ld.getYear() + "", ld.get(WeekFields.ISO.weekOfWeekBasedYear()) + ""), msg, no);
-                    if (e11Msg != null) {
-                        return e11Msg;
-                    }
-                    break;
+                    assert ld != null;
+                    return getRank10(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, String.valueOf(i), String.valueOf(ld.getYear()), String.valueOf(ld.get(WeekFields.ISO.weekOfWeekBasedYear()))), msg, no);
                 case 12:
                 case 22:
-                    String e12Msg = getRank10(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, i + "", ld.getYear() + "", ld.getMonth().getValue() + ""), msg, no);
-                    if (e12Msg != null) {
-                        return e12Msg;
-                    }
-                    break;
+                    assert ld != null;
+                    return getRank10(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, String.valueOf(i), String.valueOf(ld.getYear()), String.valueOf(ld.getMonth().getValue())), msg, no);
                 case 13:
                 case 23:
-                    String e13Msg = getRank10(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, i + "", ld.getYear() + ""), msg, no);
-                    if (e13Msg != null) {
-                        return e13Msg;
-                    }
-                    break;
+                    assert ld != null;
+                    return getRank10(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, String.valueOf(i), String.valueOf(ld.getYear())), msg, no);
                 case 14:
-                    // 财阀总榜
-                    String e14Msg = getRank10(StrUtils.getKey(Const.RANKING_PREFIX, i + ""), msg, no);
-                    if (e14Msg != null) {
-                        return e14Msg;
-                    }
-                    break;
                 case 24:
                     // 话痨总榜
-                    String e24Msg = getRank10(StrUtils.getKey(Const.RANKING_PREFIX, i + ""), msg, no);
-                    if (e24Msg != null) {
-                        return e24Msg;
-                    }
-                    break;
+                    // 财阀总榜
+                    return getRank10(StrUtils.getKey(Const.RANKING_PREFIX, String.valueOf(i)), msg, no);
                 default:
-                    String eMsg = getRank10(redisKey, msg, no);
-                    if (eMsg != null) {
-                        return eMsg;
-                    }
-                    break;
+                    return getRank10(redisKey, msg, no);
             }
-            return msg.toString();
         } catch (Exception e) {
             log.error("查询失败...", e);
             return "算了算了... \n>我查不出来(~~气鼓鼓~~) ...";
         }
-        
+
     }
-    
+
     /**
      * 获取redis排行榜前十名
+     *
      * @param redisKey
      * @param msg
      * @param no
@@ -307,17 +282,73 @@ public class RankingAnalysis extends CommandAnalysis {
         List<Integer> userNos = Lists.newArrayList();
         // 遍历
         for (ZSetOperations.TypedTuple t : defRank) {
-            userNos.add(Integer.valueOf(t.getValue().toString()));
+            userNos.add(Integer.valueOf(Objects.requireNonNull(t.getValue()).toString()));
         }
         // 获取用户
         Map<Integer, String> users = fService.getUserMap(userNos);
         // 组装
         for (ZSetOperations.TypedTuple t : defRank) {
-            Integer uNo = Integer.valueOf(t.getValue().toString());
-            msg.append(no).append(". ").append(users.getOrDefault(uNo, uNo + "")).append(" ... ").append(Objects.requireNonNull(t.getScore()).intValue()).append("\n");
+            Integer uNo = Integer.valueOf(Objects.requireNonNull(t.getValue()).toString());
+            msg.append(no).append(". ").append(users.getOrDefault(uNo, String.valueOf(uNo))).append(" ... ").append(Objects.requireNonNull(t.getScore()).intValue());
+            if (no == 1) {
+                buildTitle(msg, redisKey);
+            }
+            msg.append("\n");
             no++;
         }
         return msg.toString();
     }
-    
+
+    /**
+     * 加个称号
+     *
+     * @param msg
+     * @param redisKey
+     */
+    private void buildTitle(StringBuilder msg, String redisKey) {
+        if (redisKey.contains(Const.RANKING_DAY_PREFIX)) {
+            // 今日
+            msg.append(" ");
+            genTitle(msg, "今日鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+            msg.append(" ");
+        }
+        if (redisKey.contains(Const.RANKING_WEEK_PREFIX)) {
+            // 本周
+            msg.append(" ");
+            genTitle(msg, "周度鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+            msg.append(" ");
+        }
+        if (redisKey.contains(Const.RANKING_MONTH_PREFIX)) {
+            // 月度
+            msg.append(" ");
+            genTitle(msg, "月度鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+            msg.append(" ");
+        }
+        if (redisKey.contains(Const.RANKING_YEAR_PREFIX)) {
+            // 年度
+            msg.append(" ");
+            genTitle(msg, "年度鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+            msg.append(" ");
+        }
+    }
+
+    /**
+     * 生成对象
+     *
+     * @param msg
+     * @param title
+     * @param img
+     */
+    private void genTitle(StringBuilder msg, String title, String img) {
+        msg.append("![](https://unv-shield.librian.net/api/unv_shield?scale=0.79&txt=");
+        // 称号
+        msg.append(title);
+        msg.append("&url=");
+        // 图片
+        msg.append(img);
+        //底色
+        msg.append("&backcolor=000000");
+        // 背景色
+        msg.append("&fontcolor=ffffff)");
+    }
 }
