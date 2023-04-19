@@ -77,6 +77,7 @@ public class CollegiateBenchListener {
         // 触发词汇
         switch (commandKeys[0]) {
             case "合议禅定":
+                Fish.send2User(userName, "亲爱的, 合议禅定为应急预案, 为了避免用户滥用权利. 每次命令将消耗`64`积分. 请查看积分明细, 你的积分已被扣除!");
                 meditation(userName, commandKey);
                 break;
             default:
