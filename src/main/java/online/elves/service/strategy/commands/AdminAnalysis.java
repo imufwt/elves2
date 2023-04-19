@@ -1,5 +1,7 @@
 package online.elves.service.strategy.commands;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.enums.CrLevel;
@@ -21,21 +23,21 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class AdminAnalysis extends CommandAnalysis {
-    
+
     @Resource
     FService fService;
-    
+
     /**
      * 关键字
      */
     private static final List<String> keys =
-            Arrays.asList("补偿", "欢乐时光", "片段雨", "退费");
-    
+            Arrays.asList("补偿", "欢乐时光", "片段雨", "退费", "惹不起");
+
     @Override
     public boolean check(String commonKey) {
         return keys.contains(commonKey);
     }
-    
+
     @Override
     public void process(String commandKey, String commandDesc, String userName) {
         // 只有网管才会处理
@@ -67,6 +69,17 @@ public class AdminAnalysis extends CommandAnalysis {
                         Fish.sendMsg("天降神秘代码开启中. 冲鸭~");
                     }
                     break;
+                case "惹不起":
+                    String opList = RedisUtil.get(Const.OP_LIST);
+                    if (StringUtils.isBlank(opList)) {
+                        RedisUtil.set(Const.OP_LIST, JSON.toJSONString(Lists.newArrayList(commandDesc)));
+                    } else {
+                        List<String> ops = JSON.parseArray(opList, String.class);
+                        ops.add(commandDesc);
+                        RedisUtil.set(Const.OP_LIST, JSON.toJSONString(ops));
+                    }
+                    Fish.sendMsg("收到收到, 惹不起~");
+                    break;
                 default:
                     // 什么也不做
                     break;
@@ -82,5 +95,5 @@ public class AdminAnalysis extends CommandAnalysis {
             }
         }
     }
-    
+
 }

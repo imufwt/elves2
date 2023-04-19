@@ -92,7 +92,7 @@ public class CollegiateBenchListener {
             send(RULE);
             return;
         }
-        if (Const.OP_LIST.contains(targetUser)){
+        if (RedisUtil.get(Const.OP_LIST).contains(targetUser)){
             Fish.sendMsg("@" + sourceUser + " 你说你没事儿, 招惹他们干嘛~");
             return;
         }

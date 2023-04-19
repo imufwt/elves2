@@ -27,7 +27,7 @@ public class Const {
     /**
      * 大佬列表
      */
-    public static List<String> OP_LIST = Arrays.asList("adlered", "csfwff", "gooohlan", "iwpz", "wuang", "Yui", "imlinhanchao");
+    public static String OP_LIST = "OP:LIST";
 
     /**
      * 小精灵
