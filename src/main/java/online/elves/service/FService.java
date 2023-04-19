@@ -49,24 +49,39 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class FService {
-    
+
     @Resource
     Publisher publisher;
-    
+
     @Resource
     UserMapper userMapper;
-    
+
     @Resource
     DistrictCnMapper districtCnMapper;
-    
+
     @Resource
     MsgRecordMapper msgRecordMapper;
-    
+
     @Resource
     MysteryCodeLogMapper mysteryCodeLogMapper;
-    
+
     /**
      * 查询用户
+     *
+     * @param userName
+     * @return
+     */
+    public User getUser(String userName) {
+        // 不检查参数了, 都是自己人
+        QueryWrapper<User> cond = new QueryWrapper<>();
+        cond.eq("user_name", userName);
+        // 一次只有一个
+        return userMapper.selectOne(cond);
+    }
+
+    /**
+     * 查询用户
+     *
      * @param userNo
      * @param userName
      * @return
@@ -111,9 +126,10 @@ public class FService {
         // 返回
         return user;
     }
-    
+
     /**
      * 批量获取用户
+     *
      * @param userNos
      * @return
      */
@@ -134,9 +150,10 @@ public class FService {
         });
         return map;
     }
-    
+
     /**
      * 接收消息
+     *
      * @param userName
      * @param oId
      * @param md
@@ -202,9 +219,10 @@ public class FService {
             publisher.send(new CrCmdEvent(userName, md));
         }
     }
-    
+
     /**
      * 神秘代码购买记录
+     *
      * @param oId
      * @param whoGive
      * @param money
@@ -251,9 +269,10 @@ public class FService {
             Fish.sendMsg("@" + Const.ADMIN + " . 老板, 我们的财阀..." + whoGive + "...大人的购买记录入库失败啦. 快来救命呀~");
         }
     }
-    
+
     /**
      * 购买神秘代码
+     *
      * @param oId
      * @param userName
      * @param money
@@ -296,10 +315,11 @@ public class FService {
         // 写入缓存
         RedisUtil.set(oId.toString(), JSON.toJSONString(mysteryCode));
     }
-    
+
     /**
      * 计算用户活跃度 每次间隔三十秒发言, 活跃度增加 1.67
      * 无法感知其余操作, 目前活跃度只能是一个大概范围
+     *
      * @param userName
      */
     public void calActivity(String userName) {
@@ -336,9 +356,10 @@ public class FService {
             RedisUtil.set(cdKey, "1", 30);
         }
     }
-    
+
     /**
      * 购买神秘代码
+     *
      * @param oId
      * @param userName
      * @param money
@@ -375,9 +396,10 @@ public class FService {
             sendMysteryCode(userName, count, "积分兑换神秘代码, 兑换编号 : " + oId);
         }
     }
-    
+
     /**
      * 发送对象
+     *
      * @param user
      * @param count
      * @return
@@ -396,9 +418,10 @@ public class FService {
             Fish.send2User(user, "您失去了 ..." + Math.abs(count) + " 个... 神秘代码. 已扣除...[Cause: " + ref + "]");
         }
     }
-    
+
     /**
      * 获取用户地理位置
+     *
      * @param userCity
      * @return
      */
@@ -413,9 +436,10 @@ public class FService {
         }
         return null;
     }
-    
+
     /**
      * 匹配对象
+     *
      * @param md
      * @return
      */
@@ -439,9 +463,10 @@ public class FService {
         // 普通文字消息
         return 1;
     }
-    
+
     /**
      * 获取神秘代码购买人
+     *
      * @return
      */
     public List<MysteryCodeLog> getBuyer() {
@@ -449,9 +474,10 @@ public class FService {
         cond.eq("state", 0);
         return mysteryCodeLogMapper.selectList(cond);
     }
-    
+
     /**
      * 修改购买者的购买状态
+     *
      * @param buyer
      */
     public void updateBuyer(List<MysteryCodeLog> buyer) {
@@ -466,39 +492,51 @@ public class FService {
             mysteryCodeLogMapper.updateById(mc);
         }
     }
-    
+
+    /**
+     * 查询最近发言记录
+     * @param start
+     * @param end
+     * @return
+     */
+    public List<MsgRecord> hasEntitlement(LocalDateTime start, LocalDateTime end) {
+        QueryWrapper<MsgRecord> cond = new QueryWrapper<>();
+        cond.between("create_time", DateUtil.formatDay(start), DateUtil.formatDay(end));
+        return msgRecordMapper.selectList(cond);
+    }
+
     /**
      * 神秘代码购买对象
      */
     @Data
     @Builder
     public static class MysteryCode {
-        
+
         /**
          * 红包消息对象 id
          */
         private Long oid;
-        
+
         /**
          * 购买人
          */
         private String user;
-        
+
         /**
          * 购买金额
          */
         private int money;
-        
+
         /**
          * 单价
          */
         private int rate;
-        
+
         /**
          * 是否是欢乐时光
          */
         private boolean happy;
-        
+
     }
-    
+
 }
