@@ -66,6 +66,10 @@ public class CollegiateBenchListener {
         String[] commandKeys = cmd.split(" ");
         if (commandKeys.length < 2) {
             // 什么都不做, 我可是合议庭庭长哦
+            if (cmd.equals("合议禅定")) {
+                send(RULE);
+                return;
+            }
             return;
         }
         // 关键词
@@ -88,10 +92,6 @@ public class CollegiateBenchListener {
      * @param targetUser
      */
     private void meditation(String sourceUser, String targetUser) {
-        if (StringUtils.isBlank(targetUser)) {
-            send(RULE);
-            return;
-        }
         if (RedisUtil.get(Const.OP_LIST).contains(targetUser)){
             Fish.sendMsg("@" + sourceUser + " 你说你没事儿, 招惹他们干嘛~");
             return;
@@ -138,7 +138,7 @@ public class CollegiateBenchListener {
             }
             // 最少要有三个人, 俩人投票才算
             if (limitsUser.size() < 5) {
-                Fish.sendMsg("亲爱的 @" + sourceUser + " 当前聊天室发言人数不符合合议庭的发起合议资格\n\n> " +
+                Fish.sendMsg("亲爱的 @" + sourceUser + " 当前聊天室发言人数不符合合议庭的发起条件\n\n> " +
                         "发起合议前提. 需要在发起合议前 30 min 在聊天室发言超过 10 次的人数大于 5 人.(~~除去发起和被发起的还要剩下三个哦~~)");
                 return;
             }
