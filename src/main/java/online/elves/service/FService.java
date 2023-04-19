@@ -495,12 +495,14 @@ public class FService {
 
     /**
      * 查询最近发言记录
+     *
      * @param start
      * @param end
      * @return
      */
     public List<MsgRecord> hasEntitlement(LocalDateTime start, LocalDateTime end) {
         QueryWrapper<MsgRecord> cond = new QueryWrapper<>();
+        cond.notIn("user_no", Const.ROBOT_LIST);
         cond.between("create_time", DateUtil.formatDay(start), DateUtil.formatDay(end));
         return msgRecordMapper.selectList(cond);
     }
