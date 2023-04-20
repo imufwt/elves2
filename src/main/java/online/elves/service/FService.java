@@ -96,10 +96,13 @@ public class FService {
         // 用户编号
         if (Objects.nonNull(userNo)) {
             cond.eq("user_no", userNo);
-        }
-        // 用户名 现在改一次1W积分...应该还好吧.
-        if (StringUtils.isNotBlank(userName)) {
-            cond.eq("user_name", userName);
+        } else {
+            if (StringUtils.isNotBlank(userName)) {
+                cond.eq("user_name", userName);
+            } else {
+                // 都没有就查不到了
+                return null;
+            }
         }
         // 一次只有一个
         User user = userMapper.selectOne(cond);
