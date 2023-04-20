@@ -80,9 +80,71 @@ public class CollegiateBenchListener {
                 Fish.send2User(userName, "亲爱的, 合议禅定为应急预案, 为了避免用户滥用权利. 每次命令将消耗`64`积分. 请查看积分明细, 你的积分已被扣除!");
                 meditation(userName, commandKey);
                 break;
+            case "合议破戒":
+                relieve(userName, commandKey);
+                break;
             default:
                 // 什么都不足, 以后再填充 也可能是别的空格, 不过无所谓啦
                 break;
+        }
+    }
+
+    /**
+     * 破戒
+     *
+     * @param sourceUser
+     * @param targetUser
+     */
+    private void relieve(String sourceUser, String targetUser) {
+        if (targetUser.equals("dissoluteFate")){
+            Fish.sendMsg("抱歉, 鱼排VIP-风流无法通过合议解除~");
+            return;
+        }
+        // 破戒对象
+        String rLimit = RedisUtil.get(RELIEVE_LIMIT);
+        // 不存在 则计算新发起
+        if (StringUtils.isBlank(rLimit)) {
+            // 删除参与人
+            RedisUtil.del(RELIEVE_JOIN);
+            // 设置对象
+            RedisUtil.set(RELIEVE_LIMIT, targetUser, 60);
+            // 设置当前参与人
+            RedisUtil.set(RELIEVE_JOIN, JSON.toJSONString(Lists.newArrayList(sourceUser)));
+            // 发送锁定通知
+            Fish.sendMsg("请注意, 用户 @" + targetUser + " 正在被 @" + sourceUser + " 发起合议破戒. 合议锁定 `60s` , 过期后本次发起失效!\n\n> " +
+                    " 如果您赞成, 请发送命令  合议破戒 " + targetUser + " . 还需 `5` 个用户投票赞成");
+        } else {
+            // 计算被指定用户是否一致
+            if (Objects.equals(RedisUtil.get(RELIEVE_LIMIT), targetUser)) {
+                // 计算是否参与投票
+                List<String> joins = JSON.parseArray(RedisUtil.get(RELIEVE_JOIN), String.class);
+                if (joins.contains(sourceUser)) {
+                    Fish.sendMsg("亲爱的 @" + sourceUser + " 你已经参与过啦\n\n> 感谢你的支持~");
+                } else {
+                    // 加入投票组
+                    joins.add(sourceUser);
+                    if ((joins.size() - 1) >= 5) {
+                        // 公屏发送
+                        Fish.sendMsg("用户 @" + targetUser + " 被合议庭投票通过, 解除禅定. 如有有异议, 请保留截图及消息及时私信反馈给OP/纪律!\n\n>" +
+                                "参与人 " + JSON.toJSONString(joins));
+                        // 禅定成功 发送强制禅定命令
+                        send("破戒 " + targetUser);
+                        // 删除参与人
+                        RedisUtil.del(RELIEVE_JOIN);
+                    } else {
+                        // 回写joins
+                        RedisUtil.set(RELIEVE_JOIN, JSON.toJSONString(joins));
+                        // 重新限制对象
+                        RedisUtil.set(RELIEVE_LIMIT, targetUser, 60);
+                        // 发送锁定通知
+                        Fish.sendMsg("投票有效! 请注意, 用户 @" + targetUser + " 正在被发起合议破解. 合议锁定 `60s` , 过期后本次发起失效!\n\n> " +
+                                " 如果您赞成, 请发送命令  合议破戒 " + targetUser + " . 还需 `" + (6 - joins.size()) + "` 个用户投票赞成");
+                    }
+                }
+            } else {
+                Fish.sendMsg("亲爱的 @" + sourceUser + " 你发起的针对用户 @" + targetUser + " 的合议破戒申请无法生效\n\n> " +
+                        "当前在用户 " + RedisUtil.get(RELIEVE_LIMIT) + " 的被合议破戒投票中");
+            }
         }
     }
 
@@ -93,11 +155,11 @@ public class CollegiateBenchListener {
      * @param targetUser
      */
     private void meditation(String sourceUser, String targetUser) {
-        if (RedisUtil.get(Const.OP_LIST).contains(targetUser)){
+        if (RedisUtil.get(Const.OP_LIST).contains(targetUser)) {
             Fish.sendMsg("@" + sourceUser + " 你说你没事儿, 招惹他们干嘛~");
             return;
         }
-        if (Objects.equals(targetUser, RedisUtil.get(Const.ADMIN))){
+        if (Objects.equals(targetUser, RedisUtil.get(Const.ADMIN))) {
             Fish.sendMsg("@" + sourceUser + " 打住...不要继续说了~");
             return;
         }
@@ -187,6 +249,10 @@ public class CollegiateBenchListener {
                                     "参与人 " + JSON.toJSONString(joins));
                             // 禅定成功 发送强制禅定命令
                             send("强行禅定 " + targetUser);
+                            // 清除上一轮合议成员
+                            RedisUtil.del(MEDITATION_JOIN);
+                            // 清除限定者
+                            RedisUtil.del(MEDITATION_LIMIT);
                         } else {
                             // 回写joins
                             RedisUtil.set(MEDITATION_JOIN, JSON.toJSONString(joins));
