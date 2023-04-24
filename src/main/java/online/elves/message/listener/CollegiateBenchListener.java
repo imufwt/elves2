@@ -1,6 +1,8 @@
 package online.elves.message.listener;
 
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -96,7 +98,11 @@ public class CollegiateBenchListener {
      * @param targetUser
      */
     private void relieve(String sourceUser, String targetUser) {
-        if (targetUser.equals("dissoluteFate")){
+        if (!checkSgy(targetUser)) {
+            Fish.sendMsg("用户 " + targetUser + " 没有在思过崖面壁哦, 感谢你的仗义相救~");
+            return;
+        }
+        if (targetUser.equals("dissoluteFate")) {
             Fish.sendMsg("抱歉, 鱼排VIP-风流无法通过合议解除~");
             return;
         }
@@ -131,13 +137,15 @@ public class CollegiateBenchListener {
                         send("破戒 " + targetUser);
                         // 删除参与人
                         RedisUtil.del(RELIEVE_JOIN);
+                        // 删除限制人
+                        RedisUtil.del(RELIEVE_LIMIT);
                     } else {
                         // 回写joins
                         RedisUtil.set(RELIEVE_JOIN, JSON.toJSONString(joins));
                         // 重新限制对象
                         RedisUtil.set(RELIEVE_LIMIT, targetUser, 60);
                         // 发送锁定通知
-                        Fish.sendMsg("投票有效! 请注意, 用户 @" + targetUser + " 正在被发起合议破解. 合议锁定 `60s` , 过期后本次发起失效!\n\n> " +
+                        Fish.sendMsg("投票有效! 请注意, 用户 @" + targetUser + " 正在被发起合议破戒. 合议锁定 `60s` , 过期后本次发起失效!\n\n> " +
                                 " 如果您赞成, 请发送命令  合议破戒 " + targetUser + " . 还需 `" + (6 - joins.size()) + "` 个用户投票赞成");
                     }
                 }
@@ -146,6 +154,26 @@ public class CollegiateBenchListener {
                         "当前在用户 " + RedisUtil.get(RELIEVE_LIMIT) + " 的被合议破戒投票中");
             }
         }
+    }
+
+    /**
+     * 检查人在不在思过崖
+     *
+     * @param targetUser
+     * @return
+     */
+    private boolean checkSgy(String targetUser) {
+        String resp = HttpUtil.get("https://fishpi.cn/chat-room/si-guo-list");
+        if (StringUtils.isBlank(resp)) {
+            return false;
+        }
+        JSONObject parsed = JSON.parseObject(resp);
+        // 获取对象
+        JSONArray data = parsed.getJSONArray("data");
+        return data.stream().anyMatch(x -> {
+            JSONObject object = (JSONObject) x;
+            return object.getOrDefault("userName", "").equals(targetUser);
+        });
     }
 
     /**
@@ -165,6 +193,10 @@ public class CollegiateBenchListener {
         }
         if (Objects.equals(sourceUser, targetUser)) {
             Fish.sendMsg("@" + sourceUser + " 怎么还自己ban自己呢~");
+            return;
+        }
+        if (checkSgy(targetUser)) {
+            Fish.sendMsg("用户 " + targetUser + " 正在思过崖面壁, 发起合议禅定失败~");
             return;
         }
         // 当前时间

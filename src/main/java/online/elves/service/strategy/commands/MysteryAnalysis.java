@@ -23,7 +23,7 @@ public class MysteryAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("神秘代码", "决斗", "对线");
+    private static final List<String> keys = Arrays.asList("神秘代码", "决斗", "对线", "幸运卡");
 
     @Override
     public boolean check(String commonKey) {
@@ -67,6 +67,44 @@ public class MysteryAnalysis extends CommandAnalysis {
                     } else {
                         // 啥也不做
                         Fish.sendMsg("亲爱的 @" + userName + " . 美酒虽好, 可也不要贪杯哦~");
+                    }
+                }
+                break;
+            case "幸运卡":
+                // 神秘代码次数 缓存 key
+                String lKey = Const.MYSTERY_CODE_TIMES_PREFIX + userName;
+                // 获取次数
+                String lTimes = RedisUtil.get(lKey);
+                // 判断次数
+                if (StringUtils.isBlank(lTimes) || Integer.parseInt(lTimes) < 1) {
+                    // 啥也不做
+                    Fish.sendMsg("亲爱的 @" + userName + " . 您的神秘代码次数已耗尽咯(~~╭(╯^╰)╮~~)");
+                } else {
+                    // 当前总数
+                    int ts = Integer.parseInt(lTimes);
+                    // 幸运卡价钱
+                    String luckMoney = RedisUtil.get("MYSTERY_CODE_ICE_GAME_LUCK_MONEY");
+                    if (StringUtils.isBlank(luckMoney)) {
+                        luckMoney = "8";
+                    }
+                    // 不够扣
+                    if (ts < Integer.parseInt(luckMoney)) {
+                        Fish.sendMsg("亲爱的 @" + userName + " . 幸运卡兑换需要 " + luckMoney + " 个片段~ 你身上片段不够啦~");
+                    } else {
+                        // 1 min 兑换一个
+                        if (StringUtils.isBlank(RedisUtil.get("MYSTERY_CODE_ICE_GAME_LUCK:" + userName))) {
+                            // 发送设置
+                            Fish.send2User(userName, "亲爱的. 幸运卡已发放(自动使用)你就是最棒的欧皇~ 勇敢的去抽奖吧");
+                            // 调用小冰
+                            Fish.sendMsg("此处应该调用小冰接口...假装现在有接口了~");
+                            // 设置次数减一
+                            RedisUtil.modify(lKey, -Integer.parseInt(luckMoney));
+                            // 加锁 一分钟一个
+                            RedisUtil.set("MYSTERY_CODE_ICE_GAME_LUCK:" + userName, "limit", 60);
+                        } else {
+                            // 啥也不做
+                            Fish.send2User(userName, "亲爱的. 美酒虽好, 可也不要贪杯哦~ 幸运卡兑换CD 1 min~");
+                        }
                     }
                 }
                 break;

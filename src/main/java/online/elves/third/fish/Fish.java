@@ -9,9 +9,6 @@ import online.elves.config.Cache;
 import online.elves.config.Const;
 import online.elves.third.fish.model.FResp;
 import online.elves.third.fish.model.FUser;
-import online.elves.third.fish.model.articles.Article;
-import online.elves.third.fish.model.articles.ArticleComments;
-import online.elves.third.fish.model.articles.ArticleObj;
 import online.elves.third.fish.utils.FUtil;
 import online.elves.utils.DateUtil;
 import online.elves.utils.EncryptUtil;
@@ -20,7 +17,6 @@ import online.elves.utils.RedisUtil;
 import online.elves.ws.WsClient;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.Session;
@@ -415,5 +411,4 @@ public class Fish {
             log.error("chat room sendCoupon error ..." + JSON.toJSONString(respObj));
         }
     }
-
 }
