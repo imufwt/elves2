@@ -1,9 +1,14 @@
 package online.elves.service.strategy.commands;
 
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.enums.CrLevel;
 import online.elves.enums.Words;
+import online.elves.mapper.entity.User;
 import online.elves.service.FService;
 import online.elves.service.strategy.CommandAnalysis;
 import online.elves.third.apis.Joke;
@@ -21,6 +26,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 娱乐命令分析
@@ -36,7 +42,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们");
 
     /**
      * 打劫概率
@@ -202,6 +208,37 @@ public class FunnyAnalysis extends CommandAnalysis {
                 } else {
                     Fish.sendMsg("@" + userName + " 今儿可不是疯狂星期四. 嘻嘻~ 心急吃不了热豆腐哦.");
                 }
+                break;
+            case "欧皇们":
+                // 返回对象
+                JSONObject resp = JSON.parseObject(HttpUtil.get(RedisUtil.get("ICE:GAME:RANK")));
+                // 排行榜
+                JSONArray data = resp.getJSONArray("data");
+                // 构建返回对象
+                StringBuilder res = new StringBuilder("来看看咱们的欧皇们!").append("\n\n");
+                res.append("|排行|用户|抽奖次数|特等奖|一等奖|二等奖|三等奖|四等奖|五等奖|六等奖|参与奖|").append("\n");
+                res.append("|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|").append("\n");
+                AtomicInteger p = new AtomicInteger(0);
+                data.stream().forEach(x -> {
+                    // 转换对象
+                    JSONObject o = (JSONObject) x;
+                    res.append("|").append(p.addAndGet(1));
+                    // 用户
+                    User uname = fService.getUser(o.getString("uname"));
+                    res.append("|").append(uname.getUserNick()).append("(").append(uname.getUserName()).append(")");
+                    res.append("|").append(o.getInteger("pay_times"));
+                    res.append("|").append(o.getInteger("lv1_times"));
+                    res.append("|").append(o.getInteger("lv2_times"));
+                    res.append("|").append(o.getInteger("lv3_times"));
+                    res.append("|").append(o.getInteger("lv4_times"));
+                    res.append("|").append(o.getInteger("lv5_times"));
+                    res.append("|").append(o.getInteger("lv6_times"));
+                    res.append("|").append(o.getInteger("lv7_times"));
+                    res.append("|").append(o.getInteger("lv8_times"));
+                    res.append("|").append("\n");
+                });
+                // 发送消息
+                Fish.sendMsg(res.toString());
                 break;
             default:
                 // 什么也不用做

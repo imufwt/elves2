@@ -6,7 +6,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
+import online.elves.config.RedisConfig;
 import online.elves.utils.LotteryUtil;
+import online.elves.utils.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -69,8 +71,8 @@ public class Lottery {
     public static String getInfo(String expect, String code) {
         // 参数对象
         Map<String, Object> params = Maps.newConcurrentMap();
-        params.put("app_id", Const.MXN_API_KEY);
-        params.put("app_secret", Const.MXN_API_SECRET);
+        params.put("app_id", RedisUtil.get(Const.MXN_API_KEY));
+        params.put("app_secret", RedisUtil.get(Const.MXN_API_SECRET));
         params.put("code", code);
         // 最新一期的开奖信息
         String uri = "https://www.mxnzp.com/api/lottery/common/latest";

@@ -3,6 +3,7 @@ package online.elves.service.strategy.commands;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.service.strategy.CommandAnalysis;
 import online.elves.third.apis.MoYuCalendar;
+import online.elves.third.apis.Vocation;
 import online.elves.third.fish.Fish;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ public class MoyuCalendarAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("摸鱼历", "摸鱼", "日历", "鱼历");
+    private static final List<String> keys = Arrays.asList("摸鱼历", "摸鱼", "日历", "鱼历", "报时");
 
     @Override
     public boolean check(String commonKey) {
@@ -27,6 +28,10 @@ public class MoyuCalendarAnalysis extends CommandAnalysis {
 
     @Override
     public void process(String commandKey, String commandDesc, String userName) {
-        Fish.sendMsg(MoYuCalendar.getMyCal());
+        if (commandKey.equals("报时")) {
+            Fish.sendMsg(Vocation.getWord(Vocation.get()));
+        } else {
+            Fish.sendMsg(MoYuCalendar.getMyCal());
+        }
     }
 }

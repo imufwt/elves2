@@ -17,18 +17,19 @@ import java.util.Objects;
  */
 @Slf4j
 public class MoYuCalendar {
-    
+
     /**
      * 建站日期
      */
     private static int since = 2020;
-    
+
     public static void main(String[] args) {
         log.info(getMyCal());
     }
-    
+
     /**
      * 获取日历
+     *
      * @return
      */
     public static String getMyCal() {
@@ -53,13 +54,17 @@ public class MoYuCalendar {
             LocalDate now = LocalDate.now();
             // 开始处理
             my.append(now.getYear() - since).append(" 年 ").append(calendar.getCMonth()).append(" 月 ").append(calendar.getCDay()).append("日 你摸鱼我摸鱼, 老板宝马变青桔").append(" ").append(" \n\n");
-            my.append("#### 今天是个好日子 ").append(" \n\n");
+            // 获取假日明细
+            Vocation.VocationDetail detail = Vocation.get();
+            if (Objects.isNull(detail)) {
+                my.append("#### 今天是个好日子 ").append(" \n\n");
+            } else {
+                // 一言
+                my.append("### ").append(Vocation.getWord(detail));
+            }
             my.append("公历 ").append(DateUtil.formatDay(now)).append(" ").append(calendar.getNcWeek()).append(" ").append(" \n\n");
-            my.append("农历 ").append(calendar.getYearCn() + calendar.getMonthCn() + calendar.getDayCn()).append("(").append(calendar.getGzYear()).append(" 年").append(calendar.getGzMonth()).append(" 月").append(calendar.getGzDay()).append("日)").append(" ").append(" \n\n");
-            my.append("#### 鱼油迫切盼望的... ").append(" \n\n");
-            // 来一句话
-            my.append("距离 xa 还有 ya 天 | 距离 xb 还有 yb 天  ").append(" \n\n");
-            my.append("距离 xc 还有 yc 天 | 距离 xd 还有 yd 天  ").append(" \n\n");
+            my.append("农历 ").append(calendar.getYearCn()).append(" ").append(calendar.getMonthCn()).append(" ").append(calendar.getDayCn());
+            my.append("(").append(calendar.getGzYear()).append(" 年 ").append(calendar.getGzMonth()).append(" 月 ").append(calendar.getGzDay()).append(" 日)").append(" ").append(" \n\n");
             // 每日诗词
             my.append("#### 每日一句, 整个活 ").append(" \n\n");
             Sentence sentence = news.getSentence();
@@ -92,9 +97,10 @@ public class MoYuCalendar {
             return cal;
         }
     }
-    
+
     /**
      * 组装新闻
+     *
      * @param newsList
      * @return
      */
@@ -108,5 +114,5 @@ public class MoYuCalendar {
         n.append("</ul></details> ").append(" \n\n");
         return n.toString();
     }
-    
+
 }

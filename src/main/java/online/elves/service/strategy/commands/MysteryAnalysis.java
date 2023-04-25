@@ -1,5 +1,6 @@
 package online.elves.service.strategy.commands;
 
+import cn.hutool.http.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.enums.CrLevel;
@@ -93,12 +94,12 @@ public class MysteryAnalysis extends CommandAnalysis {
                     } else {
                         // 1 min 兑换一个
                         if (StringUtils.isBlank(RedisUtil.get("MYSTERY_CODE_ICE_GAME_LUCK:" + userName))) {
-                            // 发送设置
-                            Fish.send2User(userName, "亲爱的. 幸运卡已发放(自动使用)你就是最棒的欧皇~ 勇敢的去抽奖吧");
-                            // 调用小冰
-                            Fish.sendMsg("此处应该调用小冰接口...假装现在有接口了~");
                             // 设置次数减一
                             RedisUtil.modify(lKey, -Integer.parseInt(luckMoney));
+                            // 调整运气
+                            HttpUtil.get(RedisUtil.get("ICE:GAME:LUCK:CARD") + userName);
+                            // 发送设置
+                            Fish.send2User(userName, "亲爱的. 幸运卡已发放(自动使用)你就是最棒的欧皇~ 勇敢的去抽奖吧");
                             // 加锁 一分钟一个
                             RedisUtil.set("MYSTERY_CODE_ICE_GAME_LUCK:" + userName, "limit", 60);
                         } else {

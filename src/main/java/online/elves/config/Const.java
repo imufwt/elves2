@@ -29,6 +29,7 @@ public class Const {
      */
     public static String OP_LIST = "OP:LIST";
 
+    /* ..................账号密码系列.............开始了............... */
     /**
      * 小精灵
      */
@@ -39,57 +40,26 @@ public class Const {
      */
     public static String ELVES_SECRET = "ELVES_SECRET";
 
-    /* ..................账号密码系列.............开始了............... */
-    @Value("${third-api.mxn.key")
-    private String mxnKey;
-
     /**
      * 免费 api key
      * https://www.mxnzp.com/doc/list
      */
-    public static String MXN_API_KEY;
-
-    @PostConstruct
-    public void getMxnAK() {
-        MXN_API_KEY = mxnKey;
-    }
-
-    @Value("${third-api.mxn.secret")
-    private String mxnSec;
+    public static String MXN_API_KEY = "APIS:KEY:MXN";
 
     /**
      * 免费 api secret
      * https://www.mxnzp.com/doc/list
      */
-    public static String MXN_API_SECRET;
-
-    @PostConstruct
-    public void getMxnAS() {
-        MXN_API_SECRET = mxnSec;
-    }
-
-    @Value("${third-api.cai-yun.key")
-    private String caiYunKey;
+    public static String MXN_API_SECRET= "APIS:SECRET:MXN";
 
     /**
      * 彩云天气 API
      */
-    public static String CAI_YUN_API;
-
-    @PostConstruct
-    public void getCaiYunK() {
-        CAI_YUN_API = caiYunKey;
-    }
-
-    @Value("${third-api.ju-he.key")
-    private String juHeKey;
-
-    public static String JU_HE_API;
-
-    @PostConstruct
-    public void getJuHeK() {
-        JU_HE_API = juHeKey;
-    }
+    public static String CAI_YUN_API= "APIS:SECRET:CAI_YUN";
+    /**
+     * 聚合API
+     */
+    public static String JU_HE_API= "APIS:SECRET:JU_HE";
 
     /* ..................账号密码系列.............结束了............... */
 

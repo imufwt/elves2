@@ -53,8 +53,8 @@ public class Joke {
     private static String getJokeString() {
         // 参数对象
         Map<String, Object> params = Maps.newConcurrentMap();
-        params.put("app_id", Const.MXN_API_KEY);
-        params.put("app_secret", Const.MXN_API_SECRET);
+        params.put("app_id", RedisUtil.get(Const.MXN_API_KEY));
+        params.put("app_secret", RedisUtil.get(Const.MXN_API_SECRET));
         // 笑话列表
         String uri = "https://www.mxnzp.com/api/jokes/list/random";
         // 获取随机的笑话段子

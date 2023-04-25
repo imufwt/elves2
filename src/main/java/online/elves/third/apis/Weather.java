@@ -64,7 +64,7 @@ public class Weather {
      */
     private static String getCaiYunRealTime(String lon, String lat) {
         // 请求地址
-        String uri = "https://api.caiyunapp.com/v2.6/" + Const.CAI_YUN_API + "/" + lon + "," + lat + "/realtime";
+        String uri = "https://api.caiyunapp.com/v2.6/" + RedisUtil.get(Const.CAI_YUN_API) + "/" + lon + "," + lat + "/realtime";
         // 获取天气结果
         String result = HttpUtil.get(uri);
         if (StringUtils.isBlank(result)) {

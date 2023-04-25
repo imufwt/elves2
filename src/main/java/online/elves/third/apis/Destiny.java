@@ -51,7 +51,7 @@ public class Destiny {
         // 参数对象
         Map<String, Object> params = Maps.newConcurrentMap();
         // api key
-        params.put("key", Const.JU_HE_API);
+        params.put("key", RedisUtil.get(Const.JU_HE_API));
         // 星座名称
         params.put("consName", consName);
         // 运势类型：today,tomorrow,week,month,year
