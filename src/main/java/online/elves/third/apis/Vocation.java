@@ -43,7 +43,7 @@ public class Vocation {
             // 今天
             String today = DateUtil.formatDay(now.toLocalDate());
             // 请求日期
-            HttpResponse response = HttpRequest.get("https://timor.tech/api/holiday/info/" + today)
+            HttpResponse response = HttpRequest.get("http://timor.tech/api/holiday/info/" + today)
                     .timeout(70000).setConnectionTimeout(30000).header("User-Agent", UA).execute();
             if (200 == response.getStatus()) {
                 response.charset("UTF-8");
@@ -59,7 +59,7 @@ public class Vocation {
                 detail.setDayName(resType.getString("name"));
                 // 如果是周末或者节日，获取距离上班还有多久
                 if (type == 1 || type == 2) {
-                    HttpResponse workday = HttpRequest.get("https://timor.tech/api/holiday/workday/next/" + today)
+                    HttpResponse workday = HttpRequest.get("http://timor.tech/api/holiday/workday/next/" + today)
                             .timeout(70000).setConnectionTimeout(30000).header("User-Agent", UA).execute();
                     if (200 == workday.getStatus()) {
                         workday.charset("UTF-8");
@@ -70,7 +70,7 @@ public class Vocation {
                 }
                 // 如果是工作日或者调休，获取下一个节假日
                 if (type == 0 || type == 3) {
-                    HttpResponse weekend = HttpRequest.get("https://timor.tech/api/holiday/next/" + today + "?type=Y&week=Y")
+                    HttpResponse weekend = HttpRequest.get("http://timor.tech/api/holiday/next/" + today + "?type=Y&week=Y")
                             .timeout(70000).setConnectionTimeout(30000).header("User-Agent", UA).execute();
                     if (200 == weekend.getStatus()) {
                         weekend.charset("UTF-8");
@@ -83,15 +83,15 @@ public class Vocation {
                 }
                 // 写入缓存 明天0点失效
                 RedisUtil.set("VOCATION", JSON.toJSONString(detail), Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
+                return detail;
             } else {
                 log.info("假日获取异常...{}", JSON.toJSONString(response));
                 return null;
             }
         } else {
             // 存在则直接反序列化
-            detail = JSON.parseObject(vocation, VocationDetail.class);
+            return JSON.parseObject(vocation, VocationDetail.class);
         }
-        return detail;
     }
 
     /**

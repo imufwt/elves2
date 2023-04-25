@@ -60,7 +60,7 @@ public class MoYuCalendar {
                 my.append("#### 今天是个好日子 ").append(" \n\n");
             } else {
                 // 一言
-                my.append("### ").append(Vocation.getWord(detail));
+                my.append("### ").append(Vocation.getWord(detail)).append(" \n\n");
             }
             my.append("公历 ").append(DateUtil.formatDay(now)).append(" ").append(calendar.getNcWeek()).append(" ").append(" \n\n");
             my.append("农历 ").append(calendar.getYearCn()).append(" ").append(calendar.getMonthCn()).append(" ").append(calendar.getDayCn());
