@@ -114,11 +114,20 @@ public class CollegiateBenchListener {
             RedisUtil.del(RELIEVE_JOIN);
             // 设置对象
             RedisUtil.set(RELIEVE_LIMIT, targetUser, 60);
-            // 设置当前参与人
-            RedisUtil.set(RELIEVE_JOIN, JSON.toJSONString(Lists.newArrayList(sourceUser)));
-            // 发送锁定通知
-            Fish.sendMsg("请注意, 用户 @" + targetUser + " 正在被 @" + sourceUser + " 发起合议破戒. 合议锁定 `60s` , 过期后本次发起失效!\n\n> " +
-                    " 如果您赞成, 请发送命令  合议破戒 " + targetUser + " . 还需 `5` 个用户投票赞成");
+            if (sourceUser.equals("dissoluteFate")){
+                // 设置当前参与人
+                RedisUtil.set(RELIEVE_JOIN, JSON.toJSONString(Lists.newArrayList(sourceUser, sourceUser + "-左护法", sourceUser +"-右护法")));
+                // 发送锁定通知
+                Fish.sendMsg("请注意, 用户 @" + targetUser + " 正在被 `思过崖崖主` @" + sourceUser + " 发起合议破戒. 合议锁定 `60s` , 过期后本次发起失效!\n\n> " +
+                        " 如果您赞成, 请发送命令  合议破戒 " + targetUser + " . 还需 `3` 个用户投票赞成");
+            }else {
+                // 设置当前参与人
+                RedisUtil.set(RELIEVE_JOIN, JSON.toJSONString(Lists.newArrayList(sourceUser)));
+                // 发送锁定通知
+                Fish.sendMsg("请注意, 用户 @" + targetUser + " 正在被 @" + sourceUser + " 发起合议破戒. 合议锁定 `60s` , 过期后本次发起失效!\n\n> " +
+                        " 如果您赞成, 请发送命令  合议破戒 " + targetUser + " . 还需 `5` 个用户投票赞成");
+            }
+
         } else {
             // 计算被指定用户是否一致
             if (Objects.equals(RedisUtil.get(RELIEVE_LIMIT), targetUser)) {

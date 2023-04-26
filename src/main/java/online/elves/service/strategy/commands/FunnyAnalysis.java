@@ -42,7 +42,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们", "非酋们");
 
     /**
      * 打劫概率
@@ -216,34 +216,56 @@ public class FunnyAnalysis extends CommandAnalysis {
                 JSONArray data = resp.getJSONArray("data");
                 // 构建返回对象
                 StringBuilder res = new StringBuilder("来看看咱们的欧皇们!").append("\n\n");
-                res.append("|排行|用户|抽奖次数|特等奖|一等奖|二等奖|三等奖|四等奖|五等奖|六等奖|参与奖|").append("\n");
-                res.append("|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|").append("\n");
-                AtomicInteger p = new AtomicInteger(0);
-                data.stream().forEach(x -> {
-                    // 转换对象
-                    JSONObject o = (JSONObject) x;
-                    res.append("|").append(p.addAndGet(1));
-                    // 用户
-                    User uname = fService.getUser(o.getString("uname"));
-                    res.append("|").append(uname.getUserNick()).append("(").append(uname.getUserName()).append(")");
-                    res.append("|").append(o.getInteger("pay_times"));
-                    res.append("|").append(o.getInteger("lv1_times"));
-                    res.append("|").append(o.getInteger("lv2_times"));
-                    res.append("|").append(o.getInteger("lv3_times"));
-                    res.append("|").append(o.getInteger("lv4_times"));
-                    res.append("|").append(o.getInteger("lv5_times"));
-                    res.append("|").append(o.getInteger("lv6_times"));
-                    res.append("|").append(o.getInteger("lv7_times"));
-                    res.append("|").append(o.getInteger("lv8_times"));
-                    res.append("|").append("\n");
-                });
+                buildTable(data, res);
                 // 发送消息
                 Fish.sendMsg(res.toString());
+                break;
+            case "非酋们":
+                // 返回对象
+                JSONObject uresp = JSON.parseObject(HttpUtil.get(RedisUtil.get("ICE:GAME:RANK:NULL:LUCK")));
+                // 排行榜
+                JSONArray udata = uresp.getJSONArray("data");
+                // 构建返回对象
+                StringBuilder ures = new StringBuilder("来看看咱们的非酋们! 统统不许笑").append("\n\n");
+                // 组合下bug
+                buildTable(udata, ures);
+                // 发送消息
+                Fish.sendMsg(ures.toString());
                 break;
             default:
                 // 什么也不用做
                 break;
         }
+    }
+
+    /**
+     * 构建表格
+     *
+     * @param data
+     * @param res
+     */
+    private void buildTable(JSONArray data, StringBuilder res) {
+        res.append("|排行|用户|抽奖次数|特等奖|一等奖|二等奖|三等奖|四等奖|五等奖|六等奖|参与奖|").append("\n");
+        res.append("|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|").append("\n");
+        AtomicInteger p = new AtomicInteger(0);
+        data.stream().forEach(x -> {
+            // 转换对象
+            JSONObject o = (JSONObject) x;
+            res.append("|").append(p.addAndGet(1));
+            // 用户
+            User uname = fService.getUser(o.getString("uname"));
+            res.append("|").append(uname.getUserNick()).append("(").append(uname.getUserName()).append(")");
+            res.append("|").append(o.getInteger("pay_times"));
+            res.append("|").append(o.getInteger("lv1_times"));
+            res.append("|").append(o.getInteger("lv2_times"));
+            res.append("|").append(o.getInteger("lv3_times"));
+            res.append("|").append(o.getInteger("lv4_times"));
+            res.append("|").append(o.getInteger("lv5_times"));
+            res.append("|").append(o.getInteger("lv6_times"));
+            res.append("|").append(o.getInteger("lv7_times"));
+            res.append("|").append(o.getInteger("lv8_times"));
+            res.append("|").append("\n");
+        });
     }
 
 }

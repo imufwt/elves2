@@ -36,8 +36,8 @@ public class RankingAnalysis extends CommandAnalysis {
      * 关键字
      */
     private static final List<String> keys = Arrays.asList(
-            "0", "2", "3", "4", "5", "6",
-            "红包计数器", "小冰召唤师", "点歌大王", "朗读小玩童", "图王", "互动指数",
+            "0", "2", "3", "4", "5", "6","7",
+            "红包计数器", "小冰召唤师", "点歌大王", "朗读小玩童", "图王", "互动指数","弹幕巨头",
             "10", "11", "12", "13", "14",
             "兑换日榜", "兑换周榜", "兑换月榜", "兑换年榜", "兑换总榜",
             "20", "21", "22", "23", "24",
@@ -61,24 +61,28 @@ public class RankingAnalysis extends CommandAnalysis {
                 type = 0;
                 break;
             case "2":
-            case "小冰召唤师":
+            case "图王":
                 type = 2;
                 break;
             case "3":
-            case "点歌大王":
+            case "小冰召唤师":
                 type = 3;
                 break;
             case "4":
-            case "朗读小玩童":
+            case "点歌大王":
                 type = 4;
                 break;
             case "5":
-            case "图王":
+            case "朗读小玩童":
                 type = 5;
                 break;
             case "6":
             case "互动指数":
                 type = 6;
+                break;
+            case "7":
+            case "弹幕巨头":
+                type = 7;
                 break;
             case "10":
             case "兑换日榜":
@@ -185,6 +189,9 @@ public class RankingAnalysis extends CommandAnalysis {
                     break;
                 case 6:
                     msg.append("精灵互动指数~...谢谢你的喜欢呀~\n");
+                    break;
+                case 7:
+                    msg.append("弹幕之王~...不就是点积分么? 主打一个炫酷~\n");
                     break;
                 case 10:
                     msg.append("财阀日榜, 你的每一个神秘代码都闪耀着无上的光芒~\n");

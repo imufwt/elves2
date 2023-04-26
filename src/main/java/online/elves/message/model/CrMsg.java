@@ -62,7 +62,13 @@ public class CrMsg {
     private int onlineChatCnt;
     /** 在线用户列表 */
     private List<User> users;
-    
+
+    /* 弹幕 start */
+    /** 弹幕消息 */
+    private String barragerContent;
+    /** 弹幕颜色 */
+    private String barragerColor;
+
     /**
      * 在线用户对象
      */

@@ -201,14 +201,15 @@ public class FService {
                 RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_PREFIX, "24"), uNo, 1);
             }
             record.setType(type);
-            record.setContent(isMsg ? md : content);
+            // 弹幕另外处理
+            record.setContent(isMsg ? type == 7 ? content : md : content);
             record.setCreateTime(LocalDateTime.now());
             // 保存记录
             msgRecordMapper.insert(record);
             // 发送消息记录
             publisher.send(new CrMsgEvent(userName, user_no));
-            // 文字消息再计算能活跃
-            if (isMsg) {
+            // 文字消息再计算能活跃 弹幕不算
+            if (isMsg && type != 7) {
                 // 计算用户活跃度
                 calActivity(userName);
             }
@@ -447,7 +448,7 @@ public class FService {
      * @return
      */
     private static Integer switchType(String md) {
-        // 内容类型 0 红包 1 文字消息 2 图片消息 3 小冰 4 点歌 5 朗读 6 凌
+        // 内容类型 0 红包 1 文字消息 2 图片消息 3 小冰 4 点歌 5 朗读 6 凌 7 弹幕
         if (RegularUtil.isMdImg(md)) {
             return 2;
         }
@@ -462,6 +463,9 @@ public class FService {
         }
         if (md.startsWith("凌")) {
             return 6;
+        }
+        if (md.equals("弹幕-20230426163907")) {
+            return 7;
         }
         // 普通文字消息
         return 1;

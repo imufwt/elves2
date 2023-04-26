@@ -22,10 +22,10 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class CrListener {
-    
+
     @Resource
     FService fService;
-    
+
     @EventListener(classes = {CrEvent.class})
     public void exec(CrEvent event) {
         // 事件消息
@@ -73,6 +73,13 @@ public class CrListener {
                     fService.recMsg(userName, oId, md, content, true);
                 }
                 break;
+            case "barrager":
+                // 弹幕
+                String barragerContent = crMsg.getBarragerContent();
+                log.info("接收到聊天室弹幕消息...{}({}) 说: {}", userNickname, userName, barragerContent);
+                // 记录消息
+                fService.recMsg(userName, System.currentTimeMillis(), "弹幕-20230426163907", barragerContent, true);
+                break;
             case "discussChanged":
                 // 话题变更
                 break;
@@ -97,5 +104,5 @@ public class CrListener {
                 break;
         }
     }
-    
+
 }
