@@ -31,7 +31,7 @@ public class WsClient {
     /**
      * 会话
      */
-    public static Map<String, Pair<LocalDateTime, Session>> session = Maps.newConcurrentMap();
+    public static Map<String, Pair<LocalDateTime, Session>> session = Maps.newHashMapWithExpectedSize(128);
     
     /**
      * 聊天室特殊key

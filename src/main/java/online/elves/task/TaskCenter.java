@@ -44,8 +44,6 @@ public class TaskCenter {
     public void check1min() {
         // 开红包
         taskService.buyMysteryCode();
-        // 迎新
-        taskService.welcomeV1();
     }
 
     /**
@@ -108,9 +106,8 @@ public class TaskCenter {
     @Scheduled(cron = "0 0/5 * * * ?")
     public void check5min() {
         // 迎新
-        // taskService.welcome();
+        taskService.welcomeV1();
         // 新人报道
-        // taskService.runCheck();
         taskService.runCheckV1();
         // 精灵最后一次发言
         String s = RedisUtil.get("LAST:WORD");
