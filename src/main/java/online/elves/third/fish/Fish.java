@@ -411,4 +411,35 @@ public class Fish {
             log.error("chat room sendCoupon error ..." + JSON.toJSONString(respObj));
         }
     }
+
+    /**
+     * 发送指令
+     *
+     * @param content
+     */
+    public static void sendCMD(String content) {
+        // 精灵最后一次发言
+        RedisUtil.set("LAST:WORD", DateUtil.nowStr());
+        // 查询参数
+        JSONObject body = new JSONObject();
+        body.put("apiKey", Fish.getKey());
+        body.put("content", content);
+        // 发送消息
+        Fish.send(body);
+    }
+
+    /**
+     * 获取最近注册
+     *
+     * @return
+     */
+    public static List<FUser> getRecentRegs() {
+        // 返回对象
+        FResp respObj = FUtil.get("https://fishpi.cn/api/user/recentReg", "");
+        // 请求成功 key 有效
+        if (respObj.isOk()) {
+            return JSON.parseArray(JSON.toJSONString(respObj.getData()), FUser.class);
+        }
+        return Lists.newArrayList();
+    }
 }

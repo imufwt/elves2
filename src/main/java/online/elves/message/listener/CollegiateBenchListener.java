@@ -68,8 +68,8 @@ public class CollegiateBenchListener {
         String[] commandKeys = cmd.split(" ");
         if (commandKeys.length < 2) {
             // 什么都不做, 我可是合议庭庭长哦
-            if (cmd.equals("合议禅定")) {
-                send(RULE);
+            if (cmd.equals("合议禅定") || cmd.equals("合议破戒")) {
+                Fish.sendMsg(RULE);
                 return;
             }
             return;
@@ -143,7 +143,7 @@ public class CollegiateBenchListener {
                         Fish.sendMsg("用户 @" + targetUser + " 被合议庭投票通过, 解除禅定. 如有有异议, 请保留截图及消息及时私信反馈给OP/纪律!\n\n>" +
                                 "参与人 " + JSON.toJSONString(joins));
                         // 禅定成功 发送强制禅定命令
-                        send("破戒 " + targetUser);
+                        Fish.sendCMD("执法 禁言 " + targetUser + " 0");
                         // 删除参与人
                         RedisUtil.del(RELIEVE_JOIN);
                         // 删除限制人
@@ -289,7 +289,7 @@ public class CollegiateBenchListener {
                             Fish.sendMsg("用户 @" + targetUser + " 被合议庭投票通过, 执行强行禅定. 如有有异议, 请保留截图及消息及时私信反馈给OP/纪律!\n\n>" +
                                     "参与人 " + JSON.toJSONString(joins));
                             // 禅定成功 发送强制禅定命令
-                            send("强行禅定 " + targetUser);
+                            Fish.sendCMD("执法 禁言 " + targetUser + " 10");
                             // 清除上一轮合议成员
                             RedisUtil.del(MEDITATION_JOIN);
                             // 清除限定者
@@ -313,21 +313,5 @@ public class CollegiateBenchListener {
                         "参与合议. 需要在发起合议前 30 min 在聊天室发言超过 10 次.(~~主要防止权利滥用~~)");
             }
         }
-    }
-
-    /**
-     * 发送指令
-     *
-     * @param content
-     */
-    private void send(String content) {
-        // 精灵最后一次发言
-        RedisUtil.set("LAST:WORD", DateUtil.nowStr());
-        // 查询参数
-        JSONObject body = new JSONObject();
-        body.put("apiKey", Fish.getKey());
-        body.put("content", content);
-        // 发送消息
-        Fish.send(body);
     }
 }

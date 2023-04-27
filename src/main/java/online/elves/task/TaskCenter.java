@@ -44,6 +44,8 @@ public class TaskCenter {
     public void check1min() {
         // 开红包
         taskService.buyMysteryCode();
+        // 迎新
+        taskService.welcomeV1();
     }
 
     /**
@@ -106,7 +108,7 @@ public class TaskCenter {
     @Scheduled(cron = "0 0/5 * * * ?")
     public void check5min() {
         // 迎新
-        taskService.welcome();
+        // taskService.welcome();
         // 新人报道
         // taskService.runCheck();
         taskService.runCheckV1();
@@ -159,4 +161,27 @@ public class TaskCenter {
         Fish.sendRockPaperScissors(null, 64);
     }
 
+    /**
+     * 执法服务器状态 4 小时一次
+     */
+    @Scheduled(cron = "0 30 0/4 * * ?")
+    public void zfServerState() {
+        Fish.sendCMD("执法 服务器状态");
+    }
+
+    /**
+     * 执法维护 6 小时一次
+     */
+    @Scheduled(cron = "30 0 0/6 * * ?")
+    public void zfWeiHu() {
+        Fish.sendCMD("执法 维护");
+    }
+
+    /**
+     * 执法维护 6 小时一次
+     */
+    @Scheduled(cron = "0 0 0/12 * * ?")
+    public void zfRefresh() {
+        Fish.sendCMD("执法 刷新缓存");
+    }
 }

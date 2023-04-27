@@ -12,6 +12,7 @@ import online.elves.mapper.entity.User;
 import online.elves.service.FService;
 import online.elves.third.fish.Fish;
 import online.elves.third.fish.model.FResp;
+import online.elves.third.fish.model.FUser;
 import online.elves.third.fish.model.articles.*;
 import online.elves.utils.DateUtil;
 import online.elves.utils.RedisUtil;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -32,10 +34,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class TaskService {
-    
+
     @Resource
     FService fService;
-    
+
     /**
      * 购买神秘代码
      */
@@ -67,47 +69,30 @@ public class TaskService {
         // 修改状态
         fService.updateBuyer(buyer);
     }
-    
+
     /**
      * 迎新
      */
-    public void welcome() {
-        log.info("...开始迎新...");
-        // 获取天降红包对象. 一次一页
-        FResp point = Fish.getNotifyList("point");
-        // 获取所有通知计数
-        JSONArray data = (JSONArray) point.getData();
-        // 从最后一个开始
-        for (int i = data.size() - 1; i >= 0; i--) {
-            // 获取最后的私聊信息ID
-            String oid = RedisUtil.get(Const.CHAT_WELCOME_LAST);
-            if (StringUtils.isBlank(oid)) {
-                oid = "1675428598753";
-            }
-            // 数字化
-            Long oId = Long.valueOf(oid);
-            // 消息
-            JSONObject msg = data.getJSONObject(i);
-            // 获取消息ID
-            Long id = msg.getLong("oId");
-            // 通知内容
-            String desc = msg.getString("description");
-            // 获取消息内容中的用户名
-            String uName = getName(desc);
-            // 更早的消息或者不是天降红包, 就过去了
-            if (id <= oId || !desc.contains("摸鱼派新鱼油")) {
+    public void welcomeV1() {
+        log.info("...开始迎新 v1.0 ...");
+        // 直接获取最近的二十个注册大哥 一分钟一次
+        List<FUser> users = Fish.getRecentRegs();
+        // 批量处理
+        for (FUser user : users) {
+            // 查询用户信息
+            User ut = fService.getUser(null, user.getUserName());
+            // 获取用户打招呼记录
+            Double score = RedisUtil.getScore(Const.RANKING_PREFIX + "WELCOME", ut.getUserNo().toString());
+            if (Objects.nonNull(score)) {
+                log.info("用户 {}  已欢迎过了..., 跳过", ut.getUserName());
                 continue;
             }
-            // 查询用户信息
-            User user = fService.getUser(null, uName);
-            // 用户昵称
-            String userNickname = user.getUserNick();
-            // 用户编号 其实就是存下库
-            Integer userNo = user.getUserNo();
-            // 处理下OID 记录下最后一条
-            RedisUtil.set(Const.CHAT_WELCOME_LAST, msg.getString("oId"));
+            // 开始欢迎
+            log.info("开始欢迎用户 {} ", ut.getUserName());
+            // 记录欢迎的纪元日
+            RedisUtil.incrScore(Const.RANKING_PREFIX + "WELCOME", ut.getUserNo().toString(), Long.valueOf(LocalDate.now().toEpochDay()).intValue());
             // 组织消息
-            String content = userNickname + ": \n\n" +
+            String content = ut.getUserNick() + ": \n\n" +
                     "新晋鱼油 ❤️️ 你好 :" + " \n\n" +
                     "----" + " \n\n" +
                     " 👏🏻欢迎来到[**摸鱼派**](https://fishpi.cn) ，我是摸鱼派的＜**礼仪委员**>江户川-哀酱( @APTX-4869 ) 的好朋友 **礼仪精灵**，你在社区摸鱼期间遇到的疑问都可以私信他哦。" + " \n\n" +
@@ -128,54 +113,10 @@ public class TaskService {
                     "> 当然, 我也有一些好玩的功能, 你可以去[聊天室](https://fishpi.cn/cr)使用指令 `凌 菜单` 或 `凌 帮助` 来查看一些指令, 祝你在摸鱼派摸的开心❤️" + " \n\n " +
                     "Tips: 本条私信为自动发送, 请勿回复! " + " \n\n ";
             // 欢迎 发私信
-            Fish.send2User(uName, content);
+            Fish.send2User(ut.getUserName(), content);
         }
     }
-    
-    /**
-     * 新人报道
-     */
-    public void runCheck() {
-        log.info("...检查新人报道...");
-        // 遍历文章列表
-        List<Long> oids = Lists.newArrayList();
-        // 获取新人报道对象
-        FResp resp = Fish.getArticlesTag("新人报道", 0, 1, 5);
-        if (resp.isOk()) {
-            ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
-            collectOids(oids, obj);
-        }
-        resp = Fish.getArticlesTag("新人报到", 0, 1, 5);
-        if (resp.isOk()) {
-            ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
-            collectOids(oids, obj);
-        }
-        // 不应该为空的
-        if (CollUtil.isEmpty(oids)) {
-            log.info("未获取到 新人报道 / 新人报到 列表...请及时检查");
-            return;
-        }
-        // 缓存 key
-        String lastKey = Const.LAST_NEW_MEM_ARTICLE;
-        // 获取最后一篇文章 oid
-        Long oId = Long.valueOf(Objects.requireNonNull(RedisUtil.get(lastKey)));
-        // 过滤 大于最后一篇的文章
-        oids = oids.stream().filter(x -> x > oId).collect(Collectors.toList());
-        // 暂时没有新人报道
-        if (CollUtil.isEmpty(oids)) {
-            log.info("暂时没有 新人报道 / 新人报到...");
-            return;
-        }
-        // 遍历文章列表 回帖
-        for (Long id : oids) {
-            // 回帖
-            log.info("文章" + id);
-            reply(id);
-        }
-        // 写入最大的 oid
-        RedisUtil.set(lastKey, oids.stream().max(Long::compare).get().toString());
-    }
-    
+
     /**
      * 检查新人报道
      * 使用最近帖子, 循环获取最近五十个帖子, 然后检查标题和标签
@@ -214,11 +155,12 @@ public class TaskService {
         }
         log.info("...检查新人报道 1.0 结束...");
     }
-    
+
     /**
      * 检查文章是否是新人报道
      * 是的话  检查是否已经回复
      * 没有的话就回复一下
+     *
      * @param id
      */
     private void checkReply(Long id) {
@@ -281,18 +223,20 @@ public class TaskService {
         }
         log.info("文章...OID:{}...获取详情失败", id);
     }
-    
+
     /**
      * 是否包含特定文本
+     *
      * @param str
      * @return
      */
     private boolean hasNewMsg(String str) {
         return str.contains("新手报道") || str.contains("新手报到") || str.contains("新人报道") || str.contains("新人报到");
     }
-    
+
     /**
      * 是否自己已经回复过了
+     *
      * @param comments
      * @return
      */
@@ -310,9 +254,10 @@ public class TaskService {
         }
         return false;
     }
-    
+
     /**
      * 回复帖子
+     *
      * @param id
      */
     private static void reply(Long id) {
@@ -354,9 +299,10 @@ public class TaskService {
         // 记录回复记录
         RedisUtil.incrScore(Const.WELCOME_CHECK_REPLY, id.toString(), Long.valueOf(LocalDate.now().toEpochDay()).intValue());
     }
-    
+
     /**
      * 收集 oids
+     *
      * @param oids
      * @param articlesTag
      */
@@ -372,9 +318,10 @@ public class TaskService {
             }
         }
     }
-    
+
     /**
      * 获取通知对象里的用户名
+     *
      * @param desc
      * @return
      */
@@ -388,5 +335,4 @@ public class TaskService {
         }
         return null;
     }
-    
 }

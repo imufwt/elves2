@@ -3,6 +3,7 @@ package online.elves.message.listener;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
+import online.elves.mapper.entity.User;
 import online.elves.message.event.CrEvent;
 import online.elves.message.model.CrMsg;
 import online.elves.message.model.CrRedPacket;
@@ -14,6 +15,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -45,6 +48,16 @@ public class CrListener {
                 Long oId = Long.valueOf(crMsg.getOId());
                 if (userNickname.contains("摸鱼派官方巡逻机器人") || userName.contains("摸鱼派官方巡逻机器人")) {
                     log.info("人工智障说: {}", md);
+                    List<String> x = Arrays.asList(md.split("<summary>用户会话详情</summary>")[1].split("<br></details>")[0].split("<br>"));
+                    for (String z : x) {
+                        String[] split = z.split(" ");
+                        log.info("用户[{}]当前连接数[{}]", split[0], split[1]);
+                        // 当前连接数大于等于3
+                        if (Integer.parseInt(split[1]) > 2) {
+                            Fish.sendCMD("[⚠️设备数过载预警⚠️] 亲爱的 @" + split[0] + " 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条私信为自动发送, 请勿回复! ❤️");
+                            Fish.send2User(split[0], "[⚠️设备数过载预警⚠️] 亲爱的用户, 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条私信为自动发送, 请勿回复! ❤️");
+                        }
+                    }
                     break;
                 }
                 if (StringUtils.isBlank(md)) {
