@@ -42,7 +42,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们", "非酋们");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们", "非酋们", "探路者");
 
     /**
      * 打劫概率
@@ -236,10 +236,49 @@ public class FunnyAnalysis extends CommandAnalysis {
                 // 发送消息
                 Fish.sendMsg(ures.toString());
                 break;
+            case "探路者":
+                // 返回对象
+                JSONObject maze = JSON.parseObject(HttpUtil.get(RedisUtil.get("HANCEL:GAME:RANK:MAZE")));
+                // 排行榜
+                JSONArray mazeData = maze.getJSONArray("records");
+                // 构建返回对象
+                StringBuilder mRes = new StringBuilder("看看你的方向感怎么样, 迷宫排行榜, 积分大放送").append("\n\n");
+                // 组合下bug
+                buildMazeTable(mazeData, mRes);
+                // 发送消息
+                Fish.sendMsg(mRes.toString());
+                break;
             default:
                 // 什么也不用做
                 break;
         }
+    }
+
+    /**
+     * 构建表格
+     *
+     * @param data
+     * @param res
+     */
+    private void buildMazeTable(JSONArray data, StringBuilder res) {
+        res.append("|排行|用户|已通关|总步数|").append("\n");
+        res.append("|:----:|:----:|:----:|:----:|").append("\n");
+        // 排行计数器
+        AtomicInteger p = new AtomicInteger(0);
+        data.forEach(x -> {
+            if (p.get() > 9) {
+                return;
+            }
+            // 转换对象
+            JSONObject o = (JSONObject) x;
+            res.append("|").append(p.addAndGet(1));
+            // 用户
+            User uname = fService.getUser(o.getString("username"));
+            res.append("|").append(uname.getUserNick()).append("(").append(uname.getUserName()).append(")");
+            res.append("|").append(o.getInteger("stage"));
+            res.append("|").append(o.getInteger("step"));
+            res.append("|").append("\n");
+        });
     }
 
     /**
