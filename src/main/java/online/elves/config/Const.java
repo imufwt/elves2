@@ -1,10 +1,8 @@
 package online.elves.config;
 
 import com.google.common.collect.Lists;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
@@ -50,16 +48,16 @@ public class Const {
      * 免费 api secret
      * https://www.mxnzp.com/doc/list
      */
-    public static String MXN_API_SECRET= "APIS:SECRET:MXN";
+    public static String MXN_API_SECRET = "APIS:SECRET:MXN";
 
     /**
      * 彩云天气 API
      */
-    public static String CAI_YUN_API= "APIS:SECRET:CAI_YUN";
+    public static String CAI_YUN_API = "APIS:SECRET:CAI_YUN";
     /**
      * 聚合API
      */
-    public static String JU_HE_API= "APIS:SECRET:JU_HE";
+    public static String JU_HE_API = "APIS:SECRET:JU_HE";
 
     /* ..................账号密码系列.............结束了............... */
 
@@ -184,24 +182,32 @@ public class Const {
      */
     public static String JOKE_LIST = "fish:joke:list";
 
-    /**
-     * 神秘代码换了时光
-     */
-    public static String MYSTERY_CODE_HAPPY_TIME = "fish:mystery:happy:time";
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    /* * * * * * * * * * * * * 货币体系 * * * * * * * * * * * * * * * * * */
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     /**
-     * 沾沾卡
+     * 鱼翅欢乐时光
      */
-    public static String MYSTERY_CODE_ZZK_TIME = "fish:mystery:zzk:time";
+    public static String CURRENCY_HAPPY_TIME = "fish:currency:happy:time";
 
     /**
-     * 神秘代码个数前缀
+     * 鱼丸欢乐时光
      */
-    public static String MYSTERY_CODE_TIMES_PREFIX = "fish:mystery:times:";
+    public static String CURRENCY_FREE_TIME = "fish:currency:happy:free:time";
 
     /**
-     * 神秘代码免费前缀
+     * 鱼翅前缀
      */
-    public static String MYSTERY_CODE_FREE_PREFIX = "fish:mystery:free:";
+    public static String CURRENCY_TIMES_PREFIX = "fish:currency:times:";
+    /**
+     * 鱼丸前缀
+     */
+    public static String CURRENCY_TIMES_FREE_PREFIX = "fish:currency:free:times:";
+
+    /**
+     * 鱼翅兑换免费前缀
+     */
+    public static String CURRENCY_FREE_PREFIX = "fish:currency:free:";
 
 }

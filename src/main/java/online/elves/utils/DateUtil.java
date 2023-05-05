@@ -396,7 +396,7 @@ public class DateUtil {
 
     public static void main(String[] args) {
         //log.info(Arrays.asList("null|8888|adlered|admin".split("\\|")).toString());
-        String md = "凌 广告 神秘代码支持[1](123123123)发麻花纹(http://foshp.cn)🈶详询\n   \n 测试换行\n###引用\n\n";
+        String md = "凌 广告 鱼翅支持[1](123123123)发麻花纹(http://foshp.cn)🈶详询\n   \n 测试换行\n###引用\n\n";
         String s = md.replaceAll(" + ", " ").split("\\n")[0];
         log.info(JSON.toJSONString(s.split(" ")));
         log.info(JSON.toJSONString(s));

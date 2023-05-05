@@ -42,7 +42,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "沾沾卡", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们", "非酋们");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们", "非酋们");
 
     /**
      * 打劫概率
@@ -53,14 +53,14 @@ public class FunnyAnalysis extends CommandAnalysis {
     static {
         // 32-64积分
         odds.put(0, 0.04);
-        // 0-10 个片段
-        odds.put(1, 0.22);
-        // 优惠券
-        odds.put(2, 0.34);
-        // 0-2 个碎片
-        odds.put(3, 0.10);
-        // 什么也没有 随机扣1-3片段
-        odds.put(4, 0.30);
+        // 0-2 个鱼翅
+        odds.put(1, 0.20);
+        // 0-10 个鱼丸
+        odds.put(2, 0.36);
+        // 无功而返
+        odds.put(3, 0.20);
+        // 什么也没有 随机扣1-3个鱼丸
+        odds.put(4, 0.20);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class FunnyAnalysis extends CommandAnalysis {
         switch (commandKey) {
             case "去打劫":
                 // 财阀标记
-                String cfCount = RedisUtil.get(Const.MYSTERY_CODE_TIMES_PREFIX + userName);
+                String cfCount = RedisUtil.get(Const.CURRENCY_TIMES_PREFIX + userName);
                 if (StringUtils.isNotBlank(cfCount)) {
                     // 幸运编码
                     String lKey = "luck:try:" + userName;
@@ -92,18 +92,22 @@ public class FunnyAnalysis extends CommandAnalysis {
                                 Fish.sendSpecify(userName, money, userName + ", 喏~ 给你!");
                                 break;
                             case 1:
-                                int s = new SecureRandom().nextInt(11);
-                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我打劫回来了~ 抢到了... " + s + "  个片段...等下你要分我点啊~ ^_^");
-                                fService.sendMysteryCode(userName, s, "聊天室活动-打劫");
+                                int s1 = new SecureRandom().nextInt(3);
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我打劫回来了~ 抢到了... " + s1 + "  个`鱼翅`...等下你要分我点啊~ ^_^");
+                                fService.sendCurrency(userName, s1, "聊天室活动-打劫");
                                 break;
                             case 2:
+                                int s2 = new SecureRandom().nextInt(11);
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我打劫回来了~ 抢到了... " + s2 + "  个`鱼丸`...等下你要分我点啊~ ^_^");
+                                fService.sendCurrencyFree(userName, s2, "聊天室活动-打劫");
+                                break;
                             case 3:
                                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哎呦呦...我头晕~ 打劫的事情改日再说吧...");
                                 break;
                             case 4:
                                 int rz = new SecureRandom().nextInt(3) + 1;
                                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哼, 一天啥事儿没干净陪你打劫了. 还啥也抢不到... 撂挑子不干了");
-                                fService.sendMysteryCode(userName, -rz, "聊天室活动-打劫-无功而返");
+                                fService.sendCurrencyFree(userName, -rz, "聊天室活动-打劫-无功而返");
                                 break;
                             default:
                                 break;
@@ -117,15 +121,15 @@ public class FunnyAnalysis extends CommandAnalysis {
             case "笑话":
                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + "  \n\n" + Joke.getJoke());
                 break;
-            case "沾沾卡":
-                String zzk = RedisUtil.get(Const.MYSTERY_CODE_ZZK_TIME);
+            case "捞鱼丸":
+                String zzk = RedisUtil.get(Const.CURRENCY_FREE_TIME);
                 if (StringUtils.isBlank(zzk)) {
-                    Fish.send2User(userName, "财阀大人~ 心急吃不了热豆腐啦~ 没开片段雨呐. 嘻嘻");
+                    Fish.send2User(userName, "渔民大人~ 心急吃不了热豆腐啦~ 现在填空一篇晴朗, 哪里像有鱼丸的样子呀. 嘻嘻");
                 } else {
                     // 当前兑换次数
-                    String times = RedisUtil.get(Const.MYSTERY_CODE_TIMES_PREFIX + userName);
+                    String times = RedisUtil.get(Const.CURRENCY_TIMES_PREFIX + userName);
                     if (StringUtils.isBlank(times)) {
-                        Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你还没有成为我的财阀大人呐~");
+                        Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你还没有成为我的渔民大人呐~");
                         break;
                     }
                     // 缓存key 没人只有一次机会
@@ -134,11 +138,11 @@ public class FunnyAnalysis extends CommandAnalysis {
                     String zzkU = RedisUtil.get(rKey);
                     if (StringUtils.isBlank(zzkU)) {
                         // 可以沾
-                        fService.sendMysteryCode(userName, new Random().nextInt(11), zzk);
+                        fService.sendCurrencyFree(userName, new Random().nextInt(11), zzk);
                         // 设置缓存 180 肯定大于活动时间
                         RedisUtil.set(rKey, userName, 180);
                     } else {
-                        Fish.send2User(userName, "你已经参与过啦~ 谢谢财阀");
+                        Fish.send2User(userName, "你已经参与过啦~ 期待下次咯. 嘻嘻");
                     }
                 }
                 break;

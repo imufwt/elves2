@@ -32,7 +32,7 @@ public class CrCmdListener {
         // 用户
         String userName = event.getSource().toString();
         // 替换连续空格并拆分换行
-        cmd = cmd.trim().replaceAll(" + ", " ").split("\\n")[0];
+        cmd = cmd.trim().replaceAll(" + ", " ").replaceAll("<span[^>]*?>(</span>)*$", " ").split("\\n")[0];
         // 按照空格切分命令
         String[] commandKeys = cmd.split(" ");
         // 至少有一个空格, 才可能是命令 且第一个是 凌 开头

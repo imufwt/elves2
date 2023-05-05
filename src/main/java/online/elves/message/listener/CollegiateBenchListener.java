@@ -63,7 +63,7 @@ public class CollegiateBenchListener {
         // 用户
         String userName = event.getSource().toString();
         // 替换连续空格并拆分换行
-        cmd = cmd.trim().replaceAll(" + ", " ").split("\\n")[0];
+        cmd = cmd.trim().replaceAll(" + ", " ").replaceAll("<span[^>]*?>(</span>)*$", " ").split("\\n")[0];
         // 按照空格切分命令
         String[] commandKeys = cmd.split(" ");
         if (commandKeys.length < 2) {

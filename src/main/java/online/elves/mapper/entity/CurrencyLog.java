@@ -9,11 +9,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 神秘代码购买记录
+ * 鱼翅购买记录
  */
 @Data
-@TableName("mystery_code_log")
-public class MysteryCodeLog implements Serializable {
+@TableName("currency_log")
+public class CurrencyLog implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

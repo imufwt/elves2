@@ -59,7 +59,7 @@ public enum Comfort {
             case 3:
                 return "`热`, 但也不是不能出去";
             case 4:
-                return "`温暖`, 快来召唤神秘代码吧☺️";
+                return "`温暖`, 喝杯咖啡休息一会儿吧☺️";
             case 5:
                 return "`舒适`的很, 快去户外散散步吧~ ~~陪上你心爱的Ta~~";
             case 6:

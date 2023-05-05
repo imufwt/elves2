@@ -119,21 +119,21 @@ public class Vocation {
         // 工作日
         if (type == 0 || type == 3) {
             if (vRest == 1) {
-                word.append(" 今天提桶, 明天跑路! ").append(vName).append(" 马上就要到啦~ 我宣布📢: 明天放假🎉!");
+                word.append(" 今天提桶, 明天跑路! **").append(vName).append("** 马上就要到啦~ 我宣布📢: 明天放假🎉!");
             } else {
                 if (type == 3) {
                     word.append(" 调休不摸🐟, 天理难容! ");
                 } else {
                     word.append(" 摸🐟加油! ");
                 }
-                word.append(" 距离 ").append(vName).append(" 还有 ").append(vRest).append(" 天");
+                word.append(" 距离 **").append(vName).append("** 还有 ").append(vRest).append(" 天");
             }
         } else {
             // 假期
             if (wRest == 1) {
-                word.append(" 🥶 今天是 ").append(dayName).append(" , 假期越严重不足!!! 😭 明天上班 🥶");
+                word.append(" 🥶 今天是 **").append(dayName).append("** , 假期已经严重不足!!! 😭 明天上班 🥶");
             } else {
-                word.append(" ").append(dayName).append(" 呢~ 🏖 假日余额还有 ").append(wRest).append(" 天! 愉快的去浪吧~");
+                word.append(" **").append(dayName).append("** 呢~ 🏖 假日余额还有 ").append(wRest).append(" 天! 愉快的去浪吧~");
             }
         }
         return word.toString();

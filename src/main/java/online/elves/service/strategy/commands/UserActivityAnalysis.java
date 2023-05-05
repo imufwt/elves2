@@ -39,7 +39,7 @@ public class UserActivityAnalysis extends CommandAnalysis {
             Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你当前活跃度可能为 `1.67%` ~ 保持 `30` 秒一次发言, 预计 `30` 分钟后满活跃~");
         } else {
             if ("100".equals(uAct)) {
-                Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你当前活跃度可能为 `100%` ~ 水满咯. 做点自己想做的吧😋...比如~~召唤神秘代码~~");
+                Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你当前活跃度可能为 `100%` ~ 水满咯. 做点自己想做的吧😋...比如~~兑换个鱼翅玩玩~~");
             } else {
                 Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你当前活跃度可能为 `" + uAct + "%` ~ 保持 `30` 秒一次发言, 预计 `" + calFull(uAct) + "` 分钟后满活跃~");
             }

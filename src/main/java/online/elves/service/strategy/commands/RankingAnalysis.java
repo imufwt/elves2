@@ -194,19 +194,19 @@ public class RankingAnalysis extends CommandAnalysis {
                     msg.append("弹幕之王~...不就是点积分么? 主打一个炫酷~\n");
                     break;
                 case 10:
-                    msg.append("财阀日榜, 你的每一个神秘代码都闪耀着无上的光芒~\n");
+                    msg.append("渔场日榜, 你的每一个鱼翅都闪耀着无上的光芒~\n");
                     break;
                 case 11:
-                    msg.append("财阀周榜, 你的每一个神秘代码都闪耀着无上的光芒~\n");
+                    msg.append("渔场周榜, 你的每一个鱼翅都闪耀着无上的光芒~\n");
                     break;
                 case 12:
-                    msg.append("财阀月榜, 你的每一个神秘代码都闪耀着无上的光芒~\n");
+                    msg.append("渔场月榜, 你的每一个鱼翅都闪耀着无上的光芒~\n");
                     break;
                 case 13:
-                    msg.append("财阀年榜, 至尊席位非你莫属~\n");
+                    msg.append("渔场年榜, 至尊席位非你莫属~\n");
                     break;
                 case 14:
-                    msg.append("财阀总榜, 恐怖如斯~\n");
+                    msg.append("渔场总榜, 恐怖如斯~\n");
                     break;
                 case 20:
                     msg.append("话痨日榜, 你的每一句话扔进鱼排, 激起了阵阵涟漪~\n");

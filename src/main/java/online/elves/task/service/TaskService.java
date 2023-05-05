@@ -2,12 +2,10 @@ package online.elves.task.service;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
-import online.elves.mapper.entity.MysteryCodeLog;
+import online.elves.mapper.entity.CurrencyLog;
 import online.elves.mapper.entity.User;
 import online.elves.service.FService;
 import online.elves.third.fish.Fish;
@@ -21,12 +19,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * 活动服务.
@@ -39,19 +35,19 @@ public class TaskService {
     FService fService;
 
     /**
-     * 购买神秘代码
+     * 购买鱼翅
      */
-    public void buyMysteryCode() {
-        log.info("神秘代码购买...开始处理");
+    public void buyCurrency() {
+        log.info("购买鱼翅...开始处理");
         // 获取购买人
-        List<MysteryCodeLog> buyer = fService.getBuyer();
+        List<CurrencyLog> buyer = fService.getBuyer();
         // 没有购买者
         if (CollUtil.isEmpty(buyer)) {
-            log.info("神秘代码开包, 没有购买者...结束");
+            log.info("开包, 没有购买者...结束");
             return;
         }
         // 遍历购买者
-        for (MysteryCodeLog cl : buyer) {
+        for (CurrencyLog cl : buyer) {
             // 消息对象
             String msg = RedisUtil.get(cl.getOid().toString());
             if (StringUtils.isBlank(msg)) {
@@ -59,10 +55,10 @@ public class TaskService {
                 log.info("没有找到信息[{}]的缓存记录.", cl.getOid());
                 continue;
             }
-            // 神秘代码对象
-            FService.MysteryCode mysteryCode = JSON.parseObject(msg, FService.MysteryCode.class);
+            // 鱼翅对象
+            FService.Currency currency = JSON.parseObject(msg, FService.Currency.class);
             // 购买
-            fService.buyMysteryCode(mysteryCode.getOid(), mysteryCode.getUser(), mysteryCode.getMoney(), mysteryCode.getRate(), mysteryCode.isHappy());
+            fService.buyCurrency(currency.getOid(), currency.getUser(), currency.getMoney(), currency.getRate(), currency.isHappy());
             // 删除缓存
             RedisUtil.del(cl.getOid().toString());
         }

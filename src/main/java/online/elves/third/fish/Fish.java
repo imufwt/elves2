@@ -139,9 +139,10 @@ public class Fish {
         if (StringUtils.isNotBlank(tempCont)) {
             cont.append(" \n\n <span id = 'ad'>" + tempCont + "</span>");
         }
-        cont.append(" \n\n <span id = '" + System.currentTimeMillis() + "'/>");
+        // 防沉迷
+        cont.append(" \n\n <span id = '" + System.currentTimeMillis() + "'></span>");
         // 方便屏蔽
-        cont.append(" \n\n <span id = 'elves'/>");
+        cont.append(" \n\n <span id = 'elves'></span>");
         body.put("content", cont.toString());
         // 发送消息
         Fish.send(body);

@@ -23,7 +23,6 @@ import javax.websocket.WebSocketContainer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 
@@ -43,7 +42,7 @@ public class TaskCenter {
     @Scheduled(cron = "0 0/1 * * * ?")
     public void check1min() {
         // 开红包
-        taskService.buyMysteryCode();
+        taskService.buyCurrency();
     }
 
     /**
@@ -142,11 +141,11 @@ public class TaskCenter {
      */
     @Scheduled(cron = "0 30 11,17 * * ?")
     public void mcRain() {
-        if (StringUtils.isBlank(RedisUtil.get(Const.MYSTERY_CODE_ZZK_TIME))) {
-            RedisUtil.set(Const.MYSTERY_CODE_ZZK_TIME, "聊天室活动-片段雨-沾沾卡", 60);
-            Fish.sendMsg("天降神秘代码, [0,10] 随机个数. 限时 1 min. 冲鸭~");
+        if (StringUtils.isBlank(RedisUtil.get(Const.CURRENCY_FREE_TIME))) {
+            RedisUtil.set(Const.CURRENCY_FREE_TIME, "聊天室活动-天降鱼丸", 60);
+            Fish.sendMsg("天降鱼丸, [0,10] 随机个数. 限时 1 min. 冲鸭~");
         } else {
-            Fish.sendMsg("天降神秘代码开启中. 冲鸭~");
+            Fish.sendMsg("天降鱼丸开启中. 冲鸭~");
         }
     }
 

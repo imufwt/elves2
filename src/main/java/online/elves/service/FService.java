@@ -12,11 +12,11 @@ import online.elves.config.Const;
 import online.elves.enums.CrLevel;
 import online.elves.mapper.DistrictCnMapper;
 import online.elves.mapper.MsgRecordMapper;
-import online.elves.mapper.MysteryCodeLogMapper;
+import online.elves.mapper.CurrencyMapper;
 import online.elves.mapper.UserMapper;
 import online.elves.mapper.entity.DistrictCn;
 import online.elves.mapper.entity.MsgRecord;
-import online.elves.mapper.entity.MysteryCodeLog;
+import online.elves.mapper.entity.CurrencyLog;
 import online.elves.mapper.entity.User;
 import online.elves.message.Publisher;
 import online.elves.message.event.CrCmdEvent;
@@ -38,10 +38,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 鱼排服务对象
@@ -63,7 +60,7 @@ public class FService {
     MsgRecordMapper msgRecordMapper;
 
     @Resource
-    MysteryCodeLogMapper mysteryCodeLogMapper;
+    CurrencyMapper currencyMapper;
 
     /**
      * 查询用户
@@ -225,26 +222,26 @@ public class FService {
     }
 
     /**
-     * 神秘代码购买记录
+     * 鱼翅购买记录
      *
      * @param oId
      * @param whoGive
      * @param money
      */
     @Async("threadPool")
-    public void recordMysteryCode(Long oId, String whoGive, Integer money) {
+    public void recordCurrency(Long oId, String whoGive, Integer money) {
         try {
             // 当前时间
             LocalDateTime now = LocalDateTime.now();
-            // 神秘代码购买记录
-            MysteryCodeLog codeLog = new MysteryCodeLog();
+            // 鱼翅购买记录
+            CurrencyLog codeLog = new CurrencyLog();
             codeLog.setOid(oId);
             codeLog.setUserName(whoGive);
             codeLog.setMoney(money);
             // 未领取
             codeLog.setState(0);
             // 保存记录
-            mysteryCodeLogMapper.insert(codeLog);
+            currencyMapper.insert(codeLog);
             // 写入榜单
             // 获取用户ID 从鱼排走...比较铁 防止改名本地未修改
             User user = getUser(null, whoGive);
@@ -266,8 +263,8 @@ public class FService {
             RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, "13", now.getYear() + ""), userNo, money);
             // 写入排行榜
             RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_PREFIX, "14"), userNo, money);
-            // 购买神秘代码
-            buyMysteryCode(oId, whoGive, money);
+            // 购买鱼翅
+            buyCurrency(oId, whoGive, money);
         } catch (Exception e) {
             log.error("这可不能没了...", e);
             Fish.sendMsg("@" + Const.ADMIN + " . 老板, 我们的财阀..." + whoGive + "...大人的购买记录入库失败啦. 快来救命呀~");
@@ -275,38 +272,38 @@ public class FService {
     }
 
     /**
-     * 购买神秘代码
+     * 购买鱼翅
      *
      * @param oId
      * @param userName
      * @param money
      */
-    public void buyMysteryCode(Long oId, String userName, Integer money) {
-        log.info("{} 在消息 {} 支付积分, 索取神秘代码...", userName, oId);
+    public void buyCurrency(Long oId, String userName, Integer money) {
+        log.info("{} 在消息 {} 支付积分, 兑换鱼翅...", userName, oId);
         // 单价 32 基础价格
         Integer rate = 32;
         // 欢乐时光
         boolean happy = false;
-        if (StringUtils.isNotBlank(RedisUtil.get(Const.MYSTERY_CODE_HAPPY_TIME))) {
+        if (StringUtils.isNotBlank(RedisUtil.get(Const.CURRENCY_HAPPY_TIME))) {
             rate = new SecureRandom().nextInt(64) + 1;
-            Fish.sendMsg("尊敬的财阀大人 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 您参与欢乐时光本次费率为 ..." + rate + "积分/段");
-            // 神秘代码次数 缓存 key
-            String key = Const.MYSTERY_CODE_TIMES_PREFIX + userName;
+            Fish.sendMsg("尊敬的渔民大人 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 您参与欢乐时光本次费率为 ..." + rate + "积分/个");
+            // 鱼翅个数 缓存 key
+            String key = Const.CURRENCY_TIMES_PREFIX + userName;
             switch (rate) {
                 case 1:
                     // 补偿次数
                     RedisUtil.modify(key, 33);
-                    Fish.send2User(userName, "您获得了 ...33 个... 神秘代码. 已到账...[Cause: 欢乐时光极值奖励---1积分/段]");
+                    Fish.send2User(userName, "您获得了 ...33 个... 鱼翅. 已到账...[Cause: 欢乐时光极值奖励---1积分/段]");
                     break;
                 case 32:
                     // 补偿次数
                     RedisUtil.modify(key, 1);
-                    Fish.send2User(userName, "您获得了 ...1 个... 神秘代码. 已到账...[Cause: 欢乐时光平价奖励---32积分/段]");
+                    Fish.send2User(userName, "您获得了 ...1 个... 鱼翅. 已到账...[Cause: 欢乐时光平价奖励---32积分/段]");
                     break;
                 case 64:
                     // 补偿次数
                     RedisUtil.modify(key, 44);
-                    Fish.send2User(userName, "您获得了 ...44 个... 神秘代码. 已到账...[Cause: 欢乐时光极值奖励---64积分/段]");
+                    Fish.send2User(userName, "您获得了 ...44 个... 鱼翅. 已到账...[Cause: 欢乐时光极值奖励---64积分/段]");
                     break;
                 default:
                     // 别的什么都不做
@@ -314,10 +311,10 @@ public class FService {
             }
             happy = true;
         }
-        // 神秘代码购买记录
-        MysteryCode mysteryCode = MysteryCode.builder().oid(oId).user(userName).money(money).rate(rate).happy(happy).build();
+        // 鱼翅购买记录
+        Currency currency = Currency.builder().oid(oId).user(userName).money(money).rate(rate).happy(happy).build();
         // 写入缓存
-        RedisUtil.set(oId.toString(), JSON.toJSONString(mysteryCode));
+        RedisUtil.set(oId.toString(), JSON.toJSONString(currency));
     }
 
     /**
@@ -339,30 +336,49 @@ public class FService {
         String cdKey = Const.USER_ACTIVITY_LIMIT + userName;
         // 当前活跃度
         String userActivity = Const.USER_ACTIVITY + userName;
+        // 可以计算的次数
+        String calTimes = RedisUtil.get(cdKey);
         // 查询能否获得间隔锁  可以获得就计算, 否则啥也不干
-        if (StringUtils.isBlank(RedisUtil.get(cdKey))) {
-            // key 时间差
-            Integer diff = Long.valueOf(Duration.between(time, now.plusDays(1).atStartOfDay()).getSeconds()).intValue();
-            // 当前活跃
-            String cs = RedisUtil.get(userActivity);
-            // 当前消耗一次. 下次继续 如果有 key. 就叠加
-            if (StringUtils.isBlank(cs)) {
-                RedisUtil.set(userActivity, "1.67", diff.longValue());
-            } else {
-                // 否则增加 1.67
-                BigDecimal add = new BigDecimal(cs).add(new BigDecimal("1.67"));
-                if (add.longValue() > 100) {
-                    add = new BigDecimal("100");
-                }
-                RedisUtil.set(userActivity, add.toString(), diff);
+        if (StringUtils.isBlank(calTimes)) {
+            // 加个计算
+            incLiveness(now, time, userActivity);
+            // 10 min cd
+            RedisUtil.set(cdKey, "9", 10 * 60);
+        } else {
+            // 剩余计算次数
+            int curTimes = Integer.parseInt(calTimes);
+            // 当前没次数了
+            if (curTimes < 1) {
+                return;
             }
-            // 30秒 cd
-            RedisUtil.set(cdKey, "1", 30);
+            // 加个计算
+            incLiveness(now, time, userActivity);
+            // 10 min cd
+            RedisUtil.reSet(cdKey, String.valueOf(curTimes - 1), 10 * 60);
+
+        }
+    }
+
+    private static void incLiveness(LocalDate now, LocalDateTime time, String userActivity) {
+        // key 时间差
+        Integer diff = Long.valueOf(Duration.between(time, now.plusDays(1).atStartOfDay()).getSeconds()).intValue();
+        // 当前活跃
+        String cs = RedisUtil.get(userActivity);
+        // 当前消耗一次. 下次继续 如果有 key. 就叠加
+        if (StringUtils.isBlank(cs)) {
+            RedisUtil.set(userActivity, "1.67", diff.longValue());
+        } else {
+            // 否则增加 1.67
+            BigDecimal add = new BigDecimal(cs).add(new BigDecimal("1.67"));
+            if (add.longValue() > 100) {
+                add = new BigDecimal("100");
+            }
+            RedisUtil.set(userActivity, add.toString(), diff);
         }
     }
 
     /**
-     * 购买神秘代码
+     * 购买鱼翅
      *
      * @param oId
      * @param userName
@@ -370,34 +386,34 @@ public class FService {
      * @param fRate
      * @param isHappy
      */
-    public void buyMysteryCode(Long oId, String userName, Integer money, int fRate, boolean isHappy) {
+    public void buyCurrency(Long oId, String userName, Integer money, int fRate, boolean isHappy) {
         // 打开红包
         if (Fish.openRedPacket(oId, false)) {
             // 如果失败了, 就提示
             Fish.send2User(userName, "尊敬的财阀大人 . 我打不开你的红包啦. 快截图去找我老板 ...");
             return;
         }
-        // 神秘代码次数 缓存 key
-        String key = Const.MYSTERY_CODE_TIMES_PREFIX + userName;
+        // 鱼翅代码 缓存 key
+        String key = Const.CURRENCY_TIMES_PREFIX + userName;
         // 次数
         int count = money / fRate;
         // 涨价超过 32 了?
         if (count < 1) {
             // 积分不够, 送一次. 仅此一次
-            String freeKey = Const.MYSTERY_CODE_FREE_PREFIX + userName;
+            String freeKey = Const.CURRENCY_FREE_PREFIX + userName;
             if (StringUtils.isBlank(RedisUtil.get(freeKey))) {
                 // 发送设置
-                Fish.send2User(userName, "尊敬的财阀大人 . 您的神秘代码兑换失败(~~买不到~~)~ 赠送一次(次数已增加), 仅此一次~ 下不为例!, 兑换编号:" + oId);
+                Fish.send2User(userName, "尊敬的渔民大人 . 您的鱼翅兑换失败(~~买不到~~)~ 赠送一次(次数已增加), 仅此一次~ 下不为例!, 兑换编号:" + oId);
                 // 当前消耗一次. 下次继续 如果有 key. 就叠加
-                sendMysteryCode(userName, count, "积分兑换神秘代码失败(~~买不到, 赠送一次(次数已增加), 仅此一次下不为例!~~), 兑换编号 : " + oId);
+                sendCurrency(userName, count, "积分兑换鱼翅失败(~~买不到, 赠送一次(次数已增加), 仅此一次下不为例!~~), 兑换编号 : " + oId);
                 RedisUtil.set(freeKey, DateUtil.nowStr());
             } else {
                 // 发送设置
-                Fish.send2User(userName, "尊敬的财阀大人 . 您的神秘代码兑换失败(~~买不到~~) 本次您可以当做赞助, 或联系售后退费(手续费 30%[向上取整])~, 兑换编号:" + oId);
+                Fish.send2User(userName, "尊敬的渔民大人 . 您的鱼翅兑换失败(~~买不到~~) 本次您可以当做赞助, 或联系售后退费(手续费 50%[向上取整])~, 兑换编号:" + oId);
             }
         } else {
             // 发送设置
-            sendMysteryCode(userName, count, "积分兑换神秘代码, 兑换编号 : " + oId);
+            sendCurrency(userName, count, "积分兑换鱼翅, 兑换编号 : " + oId);
         }
     }
 
@@ -408,18 +424,40 @@ public class FService {
      * @param count
      * @return
      */
-    public void sendMysteryCode(String user, int count, String ref) {
+    public void sendCurrency(String user, int count, String ref) {
         if (StringUtils.isBlank(user)) {
             return;
         }
-        // 神秘代码次数 缓存 key
-        String key = Const.MYSTERY_CODE_TIMES_PREFIX + user;
+        // 鱼翅个数 缓存 key
+        String key = Const.CURRENCY_TIMES_PREFIX + user;
         // 补偿次数
         RedisUtil.modify(key, count);
         if (count >= 0) {
-            Fish.send2User(user, "您获得了 ..." + count + " 个... 神秘代码. 已到账...[Cause: " + ref + "]");
+            Fish.send2User(user, "您获得了 ..." + count + " 个... 鱼翅. 已到账...[Cause: " + ref + "]");
         } else {
-            Fish.send2User(user, "您失去了 ..." + Math.abs(count) + " 个... 神秘代码. 已扣除...[Cause: " + ref + "]");
+            Fish.send2User(user, "您失去了 ..." + Math.abs(count) + " 个... 鱼翅. 已扣除...[Cause: " + ref + "]");
+        }
+    }
+
+    /**
+     * 发送对象  鱼丸
+     *
+     * @param user
+     * @param count
+     * @return
+     */
+    public void sendCurrencyFree(String user, int count, String ref) {
+        if (StringUtils.isBlank(user)) {
+            return;
+        }
+        // 鱼丸个数 缓存 key
+        String key = Const.CURRENCY_TIMES_FREE_PREFIX + user;
+        // 补偿次数
+        RedisUtil.modify(key, count);
+        if (count >= 0) {
+            Fish.send2User(user, "您获得了 ..." + count + " 个... 鱼丸. 已到账...[Cause: " + ref + "]");
+        } else {
+            Fish.send2User(user, "您失去了 ..." + Math.abs(count) + " 个... 鱼丸. 已扣除...[Cause: " + ref + "]");
         }
     }
 
@@ -472,14 +510,14 @@ public class FService {
     }
 
     /**
-     * 获取神秘代码购买人
+     * 获取鱼翅购买人
      *
      * @return
      */
-    public List<MysteryCodeLog> getBuyer() {
-        QueryWrapper<MysteryCodeLog> cond = new QueryWrapper<>();
+    public List<CurrencyLog> getBuyer() {
+        QueryWrapper<CurrencyLog> cond = new QueryWrapper<>();
         cond.eq("state", 0);
-        return mysteryCodeLogMapper.selectList(cond);
+        return currencyMapper.selectList(cond);
     }
 
     /**
@@ -487,16 +525,16 @@ public class FService {
      *
      * @param buyer
      */
-    public void updateBuyer(List<MysteryCodeLog> buyer) {
+    public void updateBuyer(List<CurrencyLog> buyer) {
         // 没数据就啥也不干
         if (CollUtil.isEmpty(buyer)) {
             return;
         }
         // 遍历
-        for (MysteryCodeLog mc : buyer) {
+        for (CurrencyLog mc : buyer) {
             mc.setState(1);
             mc.setUpdateTime(LocalDateTime.now());
-            mysteryCodeLogMapper.updateById(mc);
+            currencyMapper.updateById(mc);
         }
     }
 
@@ -515,11 +553,11 @@ public class FService {
     }
 
     /**
-     * 神秘代码购买对象
+     * 购买鱼翅
      */
     @Data
     @Builder
-    public static class MysteryCode {
+    public static class Currency {
 
         /**
          * 红包消息对象 id
