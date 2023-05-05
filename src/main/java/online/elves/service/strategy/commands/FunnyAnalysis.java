@@ -242,7 +242,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                 // 排行榜
                 JSONArray mazeData = maze.getJSONArray("records");
                 // 构建返回对象
-                StringBuilder mRes = new StringBuilder("看看你的方向感怎么样, 迷宫排行榜, 积分大放送").append("\n\n");
+                StringBuilder mRes = new StringBuilder("看看你的方向感怎么样, [迷宫游戏](https://maze.hancel.org/)排行榜, 积分大放送").append("\n\n");
                 // 组合下bug
                 buildMazeTable(mazeData, mRes);
                 // 发送消息
