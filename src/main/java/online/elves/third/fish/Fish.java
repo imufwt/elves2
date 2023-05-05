@@ -134,6 +134,8 @@ public class Fish {
         // 查询参数
         JSONObject body = new JSONObject();
         body.put("apiKey", Fish.getKey());
+        // 信息来源
+        body.put("client", "Other/Elves.2023.3.25");
         // 广告
         String tempCont = RedisUtil.get(Const.TEMPORARY_CONTENT);
         if (StringUtils.isNotBlank(tempCont)) {
@@ -155,6 +157,8 @@ public class Fish {
         // 查询参数
         JSONObject body = new JSONObject();
         body.put("apiKey", getKey());
+        // 信息来源
+        body.put("client", "Other/Elves.2023.3.25");
         // 红包内容
         JSONObject rp = new JSONObject();
         // 红包信息
@@ -188,6 +192,8 @@ public class Fish {
         // 查询参数
         JSONObject body = new JSONObject();
         body.put("apiKey", getKey());
+        // 信息来源
+        body.put("client", "Other/Elves.2023.3.25");
         // 红包内容
         JSONObject rp = new JSONObject();
         // 红包信息
@@ -424,6 +430,8 @@ public class Fish {
         // 查询参数
         JSONObject body = new JSONObject();
         body.put("apiKey", Fish.getKey());
+        // 信息来源
+        body.put("client", "Other/Elves.2023.3.25");
         body.put("content", content);
         // 发送消息
         Fish.send(body);
