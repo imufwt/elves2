@@ -31,7 +31,25 @@ public class FUtil {
         }
         return null;
     }
-    
+
+    /**
+     * post 请求
+     * @param uri
+     * @param key
+     * @return
+     */
+    public static String postSpec(String uri, String key, String body) {
+        try {
+            // 获取返回信息
+            HttpResponse response = HttpRequest.post(uri + key).header("User-Agent", UA).body(body).execute();
+            // 返回对象
+            return response.body();
+        } catch (Exception e) {
+            log.warn("some request post error...{}", e.getMessage());
+        }
+        return null;
+    }
+
     /**
      * get 请求
      * @param uri

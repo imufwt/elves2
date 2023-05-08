@@ -117,7 +117,7 @@ public class Fish {
             Cache.getInstance().put(userName, userNo + "");
             return userNo;
         }
-        return null;
+        return -1;
     }
 
     /**
@@ -135,7 +135,7 @@ public class Fish {
         JSONObject body = new JSONObject();
         body.put("apiKey", Fish.getKey());
         // 信息来源
-        body.put("client", "Other/Elves.2023.3.25");
+        body.put("client", "ElvesOnline/23.3.25");
         // 广告
         String tempCont = RedisUtil.get(Const.TEMPORARY_CONTENT);
         if (StringUtils.isNotBlank(tempCont)) {
@@ -158,7 +158,7 @@ public class Fish {
         JSONObject body = new JSONObject();
         body.put("apiKey", getKey());
         // 信息来源
-        body.put("client", "Other/Elves.2023.3.25");
+        body.put("client", "ElvesOnline/23.3.25");
         // 红包内容
         JSONObject rp = new JSONObject();
         // 红包信息
@@ -193,7 +193,7 @@ public class Fish {
         JSONObject body = new JSONObject();
         body.put("apiKey", getKey());
         // 信息来源
-        body.put("client", "Other/Elves.2023.3.25");
+        body.put("client", "ElvesOnline/23.3.25");
         // 红包内容
         JSONObject rp = new JSONObject();
         // 红包信息
@@ -312,7 +312,7 @@ public class Fish {
      * @param oId
      * @param gesture 猜拳
      */
-    public static boolean openRedPacket(Long oId, Boolean gesture) {
+    public static String openRedPacket(Long oId, Boolean gesture) {
         // 查询参数
         JSONObject body = new JSONObject();
         body.put("apiKey", getKey());
@@ -327,7 +327,7 @@ public class Fish {
             body.put("gesture", result == 3 ? new Random().nextInt(3) : result);
         }
         // 返回对象
-        return FUtil.post("https://fishpi.cn/chat-room/red-packet/open", "", body.toJSONString()).isOk();
+        return FUtil.postSpec("https://fishpi.cn/chat-room/red-packet/open", "", body.toJSONString());
     }
 
     /**
@@ -431,7 +431,7 @@ public class Fish {
         JSONObject body = new JSONObject();
         body.put("apiKey", Fish.getKey());
         // 信息来源
-        body.put("client", "Other/Elves.2023.3.25");
+        body.put("client", "ElvesOnline/23.3.25");
         body.put("content", content);
         // 发送消息
         Fish.send(body);

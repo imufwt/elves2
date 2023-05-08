@@ -42,7 +42,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "25", "欧皇们", "非酋们", "探路者");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "15", "欧皇们", "非酋们", "探路者");
 
     /**
      * 打劫概率
@@ -146,7 +146,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                     }
                 }
                 break;
-            case "25":
+            case "15":
             case "今日水分":
                 // 用户编码
                 Integer userNo_ = Fish.getUserNo(userName);
@@ -261,7 +261,7 @@ public class FunnyAnalysis extends CommandAnalysis {
      * @param res
      */
     private void buildMazeTable(JSONArray data, StringBuilder res) {
-        res.append("|排行|用户|已通关|总步数|").append("\n");
+        res.append("|排行|用户|已到达|总步数|").append("\n");
         res.append("|:----:|:----:|:----:|:----:|").append("\n");
         // 排行计数器
         AtomicInteger p = new AtomicInteger(0);

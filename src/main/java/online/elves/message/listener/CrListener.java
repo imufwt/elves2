@@ -47,17 +47,19 @@ public class CrListener {
                 Long oId = Long.valueOf(crMsg.getOId());
                 if (userNickname.contains("摸鱼派官方巡逻机器人") || userName.contains("摸鱼派官方巡逻机器人")) {
                     log.info("人工智障说: {}", md);
-                    List<String> x = Arrays.asList(md.split("<summary>用户会话详情</summary>")[1].split("<br></details>")[0].split("<br>"));
-                    for (String z : x) {
-                        String[] split = z.split(" ");
-                        String currUser = split[0];
-                        log.info("用户[{}]当前连接数[{}]", currUser, split[1]);
-                        // 当前连接数大于等于3
-                        if (Integer.parseInt(split[1]) > Integer.parseInt(Objects.requireNonNull(RedisUtil.get("CMD:DEVICE:LIMIT")))) {
-                            if (!Objects.requireNonNull(RedisUtil.get(Const.OP_LIST)).contains(currUser)) {
-                                Fish.sendCMD("[⚠️设备数过载预警⚠️] 亲爱的 @" + currUser + " 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条为自动发送, 请勿回复! ❤️");
+                    if (md.contains("用户会话详情")) {
+                        List<String> x = Arrays.asList(md.split("<summary>用户会话详情</summary>")[1].split("<br></details>")[0].split("<br>"));
+                        for (String z : x) {
+                            String[] split = z.split(" ");
+                            String currUser = split[0];
+                            log.info("用户[{}]当前连接数[{}]", currUser, split[1]);
+                            // 当前连接数大于等于3
+                            if (Integer.parseInt(split[1]) > Integer.parseInt(Objects.requireNonNull(RedisUtil.get("CMD:DEVICE:LIMIT")))) {
+                                if (!Objects.requireNonNull(RedisUtil.get(Const.OP_LIST)).contains(currUser)) {
+                                    Fish.sendCMD("[⚠️设备数过载预警⚠️] 亲爱的 @" + currUser + " 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条为自动发送, 请勿回复! ❤️");
+                                }
+                                Fish.send2User(currUser, "[⚠️设备数过载预警⚠️] 亲爱的用户, 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条私信为自动发送, 请勿回复! ❤️");
                             }
-                            Fish.send2User(currUser, "[⚠️设备数过载预警⚠️] 亲爱的用户, 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条私信为自动发送, 请勿回复! ❤️");
                         }
                     }
                     break;
@@ -79,6 +81,8 @@ public class CrListener {
                             // 购买鱼翅
                             fService.recordCurrency(oId, userName, money);
                         }
+                        // 保存红包记录
+                        fService.recordRp(oId, userName, money, crRedPacket.tfType());
                     }
                     // 记录消息
                     fService.recMsg(userName, oId, md, content, false);
@@ -101,7 +105,8 @@ public class CrListener {
             case "redPacketStatus":
                 // 红包状态变更
                 log.info("接收到聊天室消息...{} 抢 到了 {} 发送的红包", crMsg.getWhoGot(), crMsg.getWhoGive());
-                //                service.getRedPacket(msg.getString("whoGot"), msg.getString("whoGive"), oId);
+                // 保存红包打开记录
+                fService.recordRpOpenLog(crMsg.getOId(), crMsg.getWhoGot(), crMsg.getWhoGive());
                 break;
             case "online":
                 // 在线状态

@@ -44,13 +44,23 @@ public class RedisUtil {
      */
     public static void reSet(String key, String value, long timeOut) {
         // 过期时间
-        Long expire = RedisConfigService.get().opsForValue().getOperations().getExpire(key, TimeUnit.SECONDS);
+        Long expire = getExpire(key);
         if (expire < 0) {
             // 没有设置过期时间 -1 或者没有这个key -2 直接设置
             set(key, value, timeOut);
         } else {
             set(key, value, expire);
         }
+    }
+
+    /**
+     * 获取指定key 剩余过期时间
+     * 没有设置过期时间 -1 或者没有这个key -2 直接设置
+     * @param key
+     * @return
+     */
+    public static Long getExpire(String key) {
+        return RedisConfigService.get().opsForValue().getOperations().getExpire(key, TimeUnit.SECONDS);
     }
 
     /**

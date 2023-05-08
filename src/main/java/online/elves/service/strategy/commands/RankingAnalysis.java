@@ -36,12 +36,18 @@ public class RankingAnalysis extends CommandAnalysis {
      * 关键字
      */
     private static final List<String> keys = Arrays.asList(
-            "0", "2", "3", "4", "5", "6","7",
-            "红包计数器", "小冰召唤师", "点歌大王", "朗读小玩童", "图王", "互动指数","弹幕巨头",
+            "2", "3", "4", "5", "6", "7",
+            "小冰召唤师", "点歌大王", "朗读小玩童", "图王", "互动指数", "弹幕巨头",
             "10", "11", "12", "13", "14",
             "兑换日榜", "兑换周榜", "兑换月榜", "兑换年榜", "兑换总榜",
             "20", "21", "22", "23", "24",
-            "话痨日榜", "话痨周榜", "话痨月榜", "话痨年榜", "话痨总榜");
+            "话痨日榜", "话痨周榜", "话痨月榜", "话痨年榜", "话痨总榜",
+            "25", "26", "27", "28", "29",
+            "散财日榜", "散财周榜", "散财月榜", "散财年榜", "散财总榜",
+            "30", "31", "32", "33", "34",
+            "赌圣日榜", "赌圣周榜", "赌圣月榜", "赌圣年榜", "赌圣总榜",
+            "35", "36", "37", "38", "39",
+            "赌狗日榜", "赌狗周榜", "赌狗月榜", "赌狗年榜", "赌狗总榜");
 
     @Override
     public boolean check(String commonKey) {
@@ -56,10 +62,6 @@ public class RankingAnalysis extends CommandAnalysis {
         boolean isDay = true;
         // 遍历命令
         switch (commandKey) {
-            case "0":
-            case "红包计数器":
-                type = 0;
-                break;
             case "2":
             case "图王":
                 type = 2;
@@ -132,6 +134,78 @@ public class RankingAnalysis extends CommandAnalysis {
                 type = 24;
                 isDay = false;
                 break;
+            case "25":
+            case "散财日榜":
+                type = 25;
+                break;
+            case "26":
+            case "散财周榜":
+                type = 26;
+                isDay = false;
+                break;
+            case "27":
+            case "散财月榜":
+                type = 27;
+                isDay = false;
+                break;
+            case "28":
+            case "散财年榜":
+                type = 28;
+                isDay = false;
+                break;
+            case "29":
+            case "散财总榜":
+                type = 29;
+                isDay = false;
+                break;
+            case "30":
+            case "赌圣日榜":
+                type = 30;
+                break;
+            case "31":
+            case "赌圣周榜":
+                type = 31;
+                isDay = false;
+                break;
+            case "32":
+            case "赌圣月榜":
+                type = 32;
+                isDay = false;
+                break;
+            case "33":
+            case "赌圣年榜":
+                type = 33;
+                isDay = false;
+                break;
+            case "34":
+            case "赌圣总榜":
+                type = 34;
+                isDay = false;
+                break;
+            case "35":
+            case "赌狗日榜":
+                type = 35;
+                break;
+            case "36":
+            case "赌狗周榜":
+                type = 36;
+                isDay = false;
+                break;
+            case "37":
+            case "赌狗月榜":
+                type = 37;
+                isDay = false;
+                break;
+            case "38":
+            case "赌狗年榜":
+                type = 38;
+                isDay = false;
+                break;
+            case "39":
+            case "赌狗总榜":
+                type = 39;
+                isDay = false;
+                break;
             default:
                 // 什么也不做
                 break;
@@ -172,9 +246,6 @@ public class RankingAnalysis extends CommandAnalysis {
             StringBuilder msg = new StringBuilder(" :\n>");
             // 不知道说啥
             switch (i) {
-                case 0:
-                    msg.append("赌狗...收手吧,外面都是痞老板\n");
-                    break;
                 case 2:
                     msg.append("图王...你要是总发新图,阿达已经盯上你了\n");
                     break;
@@ -223,6 +294,51 @@ public class RankingAnalysis extends CommandAnalysis {
                 case 24:
                     msg.append("话痨总榜, 恐怖如斯...聊天室少了你, 就少了一片天地~\n");
                     break;
+                case 25:
+                    msg.append("散财日榜, 你的每一个积分扔进鱼排, 都引起一阵欢呼~\n");
+                    break;
+                case 26:
+                    msg.append("散财周榜, 你的每一个积分扔进鱼排, 都引起一阵欢呼~\n");
+                    break;
+                case 27:
+                    msg.append("散财月榜, 你的每一个积分扔进鱼排, 都引起一阵欢呼~\n");
+                    break;
+                case 28:
+                    msg.append("散财年榜, 你就是传说中的散财童子~\n");
+                    break;
+                case 29:
+                    msg.append("散财总榜, 恐怖如斯...聊天室少了你, GDP少一半~\n");
+                    break;
+                case 30:
+                    msg.append("赌圣日榜, 你的每一次猜拳, 都充满了胜利的玄奥~\n");
+                    break;
+                case 31:
+                    msg.append("赌圣周榜, 你的每一次猜拳, 都充满了胜利的玄奥~\n");
+                    break;
+                case 32:
+                    msg.append("赌圣月榜, 你的每一次猜拳, 都充满了胜利的玄奥~\n");
+                    break;
+                case 33:
+                    msg.append("赌圣年榜, 你就是传说中的赌圣~\n");
+                    break;
+                case 34:
+                    msg.append("赌圣总榜, 恐怖如斯...聊天室少了你, 赌狗欢呼一整天~\n");
+                    break;
+                case 35:
+                    msg.append("赌狗日榜, 你的每一次猜拳, 都仿佛衰神附体~\n");
+                    break;
+                case 36:
+                    msg.append("赌狗周榜, 你的每一次猜拳, 都仿佛衰神附体~\n");
+                    break;
+                case 37:
+                    msg.append("赌狗月榜, 你的每一次猜拳, 都仿佛衰神附体~\n");
+                    break;
+                case 38:
+                    msg.append("赌狗年榜, 你就是传说中的赌狗吧~\n");
+                    break;
+                case 39:
+                    msg.append("赌狗总榜, 恐怖如斯...聊天室少了你, 税收少一半~\n");
+                    break;
                 default:
                     msg.append("词穷了...\n");
                     break;
@@ -243,26 +359,44 @@ public class RankingAnalysis extends CommandAnalysis {
                 case 9:
                 case 10:
                 case 20:
-                    return getRank10(StrUtils.getKey(Const.RANKING_DAY_PREFIX, String.valueOf(i), simpleDay), msg, no);
+                case 25:
+                case 30:
+                case 35:
+                    return getRank10(StrUtils.getKey(Const.RANKING_DAY_PREFIX, String.valueOf(i), simpleDay), msg, no, i);
                 case 11:
                 case 21:
+                case 26:
+                case 31:
+                case 36:
                     assert ld != null;
-                    return getRank10(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, String.valueOf(i), String.valueOf(ld.getYear()), String.valueOf(ld.get(WeekFields.ISO.weekOfWeekBasedYear()))), msg, no);
+                    return getRank10(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, String.valueOf(i), String.valueOf(ld.getYear()), String.valueOf(ld.get(WeekFields.ISO.weekOfWeekBasedYear()))), msg, no, i);
                 case 12:
                 case 22:
+                case 27:
+                case 32:
+                case 37:
                     assert ld != null;
-                    return getRank10(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, String.valueOf(i), String.valueOf(ld.getYear()), String.valueOf(ld.getMonth().getValue())), msg, no);
+                    return getRank10(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, String.valueOf(i), String.valueOf(ld.getYear()), String.valueOf(ld.getMonth().getValue())), msg, no, i);
                 case 13:
                 case 23:
+                case 28:
+                case 33:
+                case 38:
                     assert ld != null;
-                    return getRank10(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, String.valueOf(i), String.valueOf(ld.getYear())), msg, no);
+                    return getRank10(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, String.valueOf(i), String.valueOf(ld.getYear())), msg, no, i);
                 case 14:
                 case 24:
+                case 29:
+                case 34:
+                case 39:
                     // 话痨总榜
                     // 财阀总榜
-                    return getRank10(StrUtils.getKey(Const.RANKING_PREFIX, String.valueOf(i)), msg, no);
+                    // 散财总榜
+                    // 赌神总榜
+                    // 赌狗总榜
+                    return getRank10(StrUtils.getKey(Const.RANKING_PREFIX, String.valueOf(i)), msg, no, i);
                 default:
-                    return getRank10(redisKey, msg, no);
+                    return getRank10(redisKey, msg, no, i);
             }
         } catch (Exception e) {
             log.error("查询失败...", e);
@@ -277,9 +411,10 @@ public class RankingAnalysis extends CommandAnalysis {
      * @param redisKey
      * @param msg
      * @param no
+     * @param type
      * @return
      */
-    private String getRank10(String redisKey, StringBuilder msg, int no) {
+    private String getRank10(String redisKey, StringBuilder msg, int no, int type) {
         // 否则就是 redis 前十名
         Set<ZSetOperations.TypedTuple> defRank = RedisUtil.rank(redisKey, 0, 9);
         if (CollUtil.isEmpty(defRank)) {
@@ -298,7 +433,7 @@ public class RankingAnalysis extends CommandAnalysis {
             Integer uNo = Integer.valueOf(Objects.requireNonNull(t.getValue()).toString());
             msg.append(no).append(". ").append(users.getOrDefault(uNo, String.valueOf(uNo))).append(" ... ").append(Objects.requireNonNull(t.getScore()).intValue());
             if (no == 1) {
-                buildTitle(msg, redisKey);
+                buildTitle(msg, type);
             }
             msg.append("\n");
             no++;
@@ -310,33 +445,90 @@ public class RankingAnalysis extends CommandAnalysis {
      * 加个称号
      *
      * @param msg
-     * @param redisKey
+     * @param type
      */
-    private void buildTitle(StringBuilder msg, String redisKey) {
-        if (redisKey.contains(Const.RANKING_DAY_PREFIX)) {
-            // 今日
-            msg.append(" ");
-            genTitle(msg, "今日鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
-            msg.append(" ");
+    private void buildTitle(StringBuilder msg, int type) {
+        msg.append(" ");
+        switch (type) {
+            case 10:
+                genTitle(msg, "今日渔场主", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 11:
+                genTitle(msg, "周度渔场主", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 12:
+                genTitle(msg, "月度渔场主", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 13:
+                genTitle(msg, "年度渔场主", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 14:
+                genTitle(msg, "渔场主", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 20:
+                genTitle(msg, "今日鱼王", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 21:
+                genTitle(msg, "周度鱼王", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 22:
+                genTitle(msg, "月度鱼王", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 23:
+                genTitle(msg, "年度鱼王", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 24:
+                genTitle(msg, "鱼王", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 25:
+                genTitle(msg, "今日散财童子", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 26:
+                genTitle(msg, "周度散财童子", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 27:
+                genTitle(msg, "月度散财童子", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 28:
+                genTitle(msg, "年度散财童子", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 29:
+                genTitle(msg, "散财童子", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 30:
+                genTitle(msg, "今日赌圣", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 31:
+                genTitle(msg, "周度赌圣", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 32:
+                genTitle(msg, "月度赌圣", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 33:
+                genTitle(msg, "年度赌圣", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 34:
+                genTitle(msg, "赌圣", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 35:
+                genTitle(msg, "今日赌狗", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 36:
+                genTitle(msg, "周度赌狗", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 37:
+                genTitle(msg, "月度赌狗", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 38:
+                genTitle(msg, "年度赌狗", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 39:
+                genTitle(msg, "赌狗", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            default:
+                break;
         }
-        if (redisKey.contains(Const.RANKING_WEEK_PREFIX)) {
-            // 本周
-            msg.append(" ");
-            genTitle(msg, "周度鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
-            msg.append(" ");
-        }
-        if (redisKey.contains(Const.RANKING_MONTH_PREFIX)) {
-            // 月度
-            msg.append(" ");
-            genTitle(msg, "月度鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
-            msg.append(" ");
-        }
-        if (redisKey.contains(Const.RANKING_YEAR_PREFIX)) {
-            // 年度
-            msg.append(" ");
-            genTitle(msg, "年度鱼王","https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
-            msg.append(" ");
-        }
+        msg.append(" ");
     }
 
     /**

@@ -2,6 +2,8 @@ package online.elves.service;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.google.common.collect.Maps;
@@ -10,18 +12,13 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.enums.CrLevel;
-import online.elves.mapper.DistrictCnMapper;
-import online.elves.mapper.MsgRecordMapper;
-import online.elves.mapper.CurrencyMapper;
-import online.elves.mapper.UserMapper;
-import online.elves.mapper.entity.DistrictCn;
-import online.elves.mapper.entity.MsgRecord;
-import online.elves.mapper.entity.CurrencyLog;
-import online.elves.mapper.entity.User;
+import online.elves.mapper.*;
+import online.elves.mapper.entity.*;
 import online.elves.message.Publisher;
 import online.elves.message.event.CrCmdEvent;
 import online.elves.message.event.CrMsgEvent;
 import online.elves.third.fish.Fish;
+import online.elves.third.fish.model.FResp;
 import online.elves.third.fish.model.FUser;
 import online.elves.utils.DateUtil;
 import online.elves.utils.RedisUtil;
@@ -61,6 +58,12 @@ public class FService {
 
     @Resource
     CurrencyMapper currencyMapper;
+
+    @Resource
+    RpRecordMapper rpRecordMapper;
+
+    @Resource
+    RpOpenLogMapper rpOpenLogMapper;
 
     /**
      * 查询用户
@@ -197,6 +200,9 @@ public class FService {
                 // 写入排行榜
                 RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_PREFIX, "24"), uNo, 1);
             }
+            if (user_no == 8888 && md.contains("56c0f695")) {
+                Fish.sendMsg("![让你乌拉](https://pwl.stackoverflow.wiki/2022/03/image-e4191ea4.png)");
+            }
             record.setType(type);
             // 弹幕另外处理
             record.setContent(isMsg ? type == 7 ? content : md : content);
@@ -206,7 +212,7 @@ public class FService {
             // 发送消息记录
             publisher.send(new CrMsgEvent(userName, user_no));
             // 文字消息再计算能活跃 弹幕不算
-            if (isMsg && type != 7) {
+            if (isMsg) {
                 // 计算用户活跃度
                 calActivity(userName);
             }
@@ -256,20 +262,178 @@ public class FService {
             // 日榜
             RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_DAY_PREFIX, "10", DateUtil.format(DateUtil.ld2UDate(now.toLocalDate()), "yyyyMMdd")), userNo, money);
             // 周榜
-            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, "11", now.getYear() + "", now.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()) + ""), userNo, money);
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, "11", String.valueOf(now.getYear()), String.valueOf(now.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()))), userNo, money);
             // 月榜
-            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, "12", now.getYear() + "", now.getMonth().getValue() + ""), userNo, money);
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, "12", String.valueOf(now.getYear()), String.valueOf(now.getMonth().getValue())), userNo, money);
             // 年榜
-            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, "13", now.getYear() + ""), userNo, money);
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, "13", String.valueOf(now.getYear())), userNo, money);
             // 写入排行榜
             RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_PREFIX, "14"), userNo, money);
             // 购买鱼翅
             buyCurrency(oId, whoGive, money);
         } catch (Exception e) {
             log.error("这可不能没了...", e);
-            Fish.sendMsg("@" + Const.ADMIN + " . 老板, 我们的财阀..." + whoGive + "...大人的购买记录入库失败啦. 快来救命呀~");
+            Fish.sendMsg("@" + RedisUtil.get(Const.ADMIN) + " . 老板, 我们的财阀..." + whoGive + "...大人的购买记录入库失败啦. 快来救命呀~");
         }
     }
+
+    /**
+     * 保存红包记录
+     *
+     * @param oId
+     * @param userName
+     * @param money
+     * @param rpType
+     */
+    @Async("threadPool")
+    public void recordRp(Long oId, String userName, Integer money, int rpType) {
+        try {
+            // 当前时间
+            LocalDateTime now = LocalDateTime.now();
+            // 鱼翅购买记录
+            RpRecord record = new RpRecord();
+            record.setOid(oId);
+            Integer userNo_ = Fish.getUserNo(userName);
+            record.setUserNo(userNo_);
+            record.setMoney(money);
+            record.setRpType(rpType);
+            record.setCreateTime(now);
+            record.setUpdateTime(now);
+            // 保存记录
+            rpRecordMapper.insert(record);
+            // 字符串
+            String userNo = userNo_.toString();
+            // 日榜
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_DAY_PREFIX, "25", DateUtil.format(DateUtil.ld2UDate(now.toLocalDate()), "yyyyMMdd")), userNo, money);
+            // 周榜
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, "26", String.valueOf(now.getYear()), String.valueOf(now.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()))), userNo, money);
+            // 月榜
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, "27", String.valueOf(now.getYear()), String.valueOf(now.getMonth().getValue())), userNo, money);
+            // 年榜
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, "28", String.valueOf(now.getYear())), userNo, money);
+            // 写入排行榜
+            RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_PREFIX, "29"), userNo, money);
+        } catch (Exception e) {
+            log.error("这可不能没了...", e);
+            Fish.sendMsg("@" + RedisUtil.get(Const.ADMIN) + " . 老板, 散财童子大人的记录入库失败啦. 快来救命呀~");
+        }
+    }
+
+    /**
+     * 保存红包打开记录
+     *
+     * @param oId
+     * @param whoGot
+     * @param whoGive
+     */
+    @Async("threadPool")
+    public void recordRpOpenLog(String oId, String whoGot, String whoGive) {
+        try {
+            // 当前时间
+            LocalDateTime now = LocalDateTime.now();
+            // 鱼翅购买记录
+            RpOpenLog openLog = new RpOpenLog();
+            openLog.setOid(Long.parseLong(oId));
+            Integer gotUno = Fish.getUserNo(whoGot);
+            openLog.setUserNo(gotUno);
+            // 获取红包记录
+            QueryWrapper<RpRecord> cond = new QueryWrapper<>();
+            cond.eq("oid", openLog.getOid());
+            // 获取记录
+            RpRecord record = rpRecordMapper.selectOne(cond);
+            if (Objects.isNull(record)){
+                log.info("入库前的记录, 不管啦");
+                return;
+            }
+            // 发送人
+            Integer giveUno = Fish.getUserNo(whoGive);
+            // 打开红包
+            String fResp;
+            // 猜拳需要参数
+            if (record.getRpType() == 5) {
+                fResp = Fish.openRedPacket(openLog.getOid(), true);
+            } else {
+                fResp = Fish.openRedPacket(openLog.getOid(), false);
+            }
+            // 获取打开信息
+            JSONObject rp = JSON.parseObject(fResp);
+            // 获取列表
+            JSONArray who = rp.getJSONArray("who");
+            // 积分明细
+            int point = 0;
+            // 遍历
+            for (Object o : who) {
+                // 获取人
+                JSONObject w = (JSONObject) o;
+                if (w.getString("userName").equals(whoGot)) {
+                    point = w.getInteger("userMoney");
+                    openLog.setMoney(point);
+                }
+            }
+            openLog.setCreateTime(now);
+            openLog.setUpdateTime(now);
+            // 保存记录
+            rpOpenLogMapper.insert(openLog);
+            // 存在 且是猜拳 且不是不是精灵发的
+            if (Objects.nonNull(record) && record.getRpType() == 5 && giveUno != 521) {
+                // 字符串
+                String gotNo = gotUno.toString(), giveNo = giveUno.toString();
+                // got 赢了
+                if (point > 0) {
+                    winner(gotNo, point, now);
+                    loser(giveNo, point, now);
+                }
+                // give 赢了
+                if (point < 0) {
+                    winner(giveNo, Math.abs(point), now);
+                    loser(gotNo, Math.abs(point), now);
+                }
+                // 平手不算
+            }
+        } catch (Exception e) {
+            log.error("这可不能没了...", e);
+            Fish.sendMsg("@" + RedisUtil.get(Const.ADMIN) + " . 老板, 红包打开记录入库失败啦. 快来救命呀~");
+        }
+    }
+
+    /**
+     * 获胜者
+     *
+     * @param uno
+     * @param money
+     */
+    private void winner(String uno, int money, LocalDateTime now) {
+        // 日榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_DAY_PREFIX, "30", DateUtil.format(DateUtil.ld2UDate(now.toLocalDate()), "yyyyMMdd")), uno, money);
+        // 周榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, "31", String.valueOf(now.getYear()), String.valueOf(now.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()))), uno, money);
+        // 月榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, "32", String.valueOf(now.getYear()), String.valueOf(now.getMonth().getValue())), uno, money);
+        // 年榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, "33", String.valueOf(now.getYear())), uno, money);
+        // 写入排行榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_PREFIX, "34"), uno, money);
+    }
+
+    /**
+     * 失败者
+     *
+     * @param uno
+     * @param money
+     */
+    private void loser(String uno, int money, LocalDateTime now) {
+        // 日榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_DAY_PREFIX, "35", DateUtil.format(DateUtil.ld2UDate(now.toLocalDate()), "yyyyMMdd")), uno, money);
+        // 周榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_WEEK_PREFIX, "36", String.valueOf(now.getYear()), String.valueOf(now.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()))), uno, money);
+        // 月榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_MONTH_PREFIX, "37", String.valueOf(now.getYear()), String.valueOf(now.getMonth().getValue())), uno, money);
+        // 年榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, "38", String.valueOf(now.getYear())), uno, money);
+        // 写入排行榜
+        RedisUtil.incrScore(StrUtils.getKey(Const.RANKING_PREFIX, "39"), uno, money);
+    }
+
 
     /**
      * 购买鱼翅
@@ -366,10 +530,10 @@ public class FService {
         String cs = RedisUtil.get(userActivity);
         // 当前消耗一次. 下次继续 如果有 key. 就叠加
         if (StringUtils.isBlank(cs)) {
-            RedisUtil.set(userActivity, "1.67", diff.longValue());
+            RedisUtil.set(userActivity, "2", diff.longValue());
         } else {
-            // 否则增加 1.67
-            BigDecimal add = new BigDecimal(cs).add(new BigDecimal("1.67"));
+            // 否则增加 2
+            BigDecimal add = new BigDecimal(cs).add(new BigDecimal("2"));
             if (add.longValue() > 100) {
                 add = new BigDecimal("100");
             }
@@ -388,7 +552,7 @@ public class FService {
      */
     public void buyCurrency(Long oId, String userName, Integer money, int fRate, boolean isHappy) {
         // 打开红包
-        if (Fish.openRedPacket(oId, false)) {
+        if (StringUtils.isNotBlank(Fish.openRedPacket(oId, false))) {
             // 如果失败了, 就提示
             Fish.send2User(userName, "尊敬的财阀大人 . 我打不开你的红包啦. 快截图去找我老板 ...");
             return;
