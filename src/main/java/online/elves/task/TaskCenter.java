@@ -43,6 +43,8 @@ public class TaskCenter {
     public void check1min() {
         // 开红包
         taskService.buyCurrency();
+        // 记录红包
+        taskService.recordRpLog();
     }
 
     /**
@@ -162,7 +164,9 @@ public class TaskCenter {
      */
     @Scheduled(cron = "0 30 0/4 * * ?")
     public void zfServerState() {
-        Fish.sendCMD("执法 服务器状态");
+        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "FWQZT"))){
+            Fish.sendCMD("执法 服务器状态");
+        }
     }
 
     /**
@@ -170,7 +174,9 @@ public class TaskCenter {
      */
     @Scheduled(cron = "30 0 0/6 * * ?")
     public void zfWeiHu() {
-        Fish.sendCMD("执法 维护");
+        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "WH"))){
+            Fish.sendCMD("执法 维护");
+        }
     }
 
     /**
@@ -178,6 +184,8 @@ public class TaskCenter {
      */
     @Scheduled(cron = "0 0 0/12 * * ?")
     public void zfRefresh() {
-        Fish.sendCMD("执法 刷新缓存");
+        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "SXHC"))){
+            Fish.sendCMD("执法 刷新缓存");
+        }
     }
 }

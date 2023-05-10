@@ -29,9 +29,10 @@ import java.net.URI;
 @SpringBootApplication
 @MapperScan({"online.elves.mapper"})
 public class Elves {
-    
+
     /**
      * 主入口
+     *
      * @param args
      */
     public static void main(String[] args) throws DeploymentException, IOException {
@@ -47,5 +48,4 @@ public class Elves {
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         WsClient.session.put(elves, Pair.of(DateUtil.maxTime(), container.connectToServer(new UserChat(elves), URI.create(uri))));
     }
-    
 }

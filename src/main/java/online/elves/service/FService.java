@@ -18,7 +18,6 @@ import online.elves.message.Publisher;
 import online.elves.message.event.CrCmdEvent;
 import online.elves.message.event.CrMsgEvent;
 import online.elves.third.fish.Fish;
-import online.elves.third.fish.model.FResp;
 import online.elves.third.fish.model.FUser;
 import online.elves.utils.DateUtil;
 import online.elves.utils.RedisUtil;
@@ -36,6 +35,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * 鱼排服务对象
@@ -331,7 +334,7 @@ public class FService {
         try {
             // 当前时间
             LocalDateTime now = LocalDateTime.now();
-            // 鱼翅购买记录
+            // 红包打开记录
             RpOpenLog openLog = new RpOpenLog();
             openLog.setOid(Long.parseLong(oId));
             Integer gotUno = Fish.getUserNo(whoGot);
@@ -341,55 +344,15 @@ public class FService {
             cond.eq("oid", openLog.getOid());
             // 获取记录
             RpRecord record = rpRecordMapper.selectOne(cond);
-            if (Objects.isNull(record)){
+            if (Objects.isNull(record)) {
                 log.info("入库前的记录, 不管啦");
                 return;
             }
-            // 发送人
-            Integer giveUno = Fish.getUserNo(whoGive);
-            // 打开红包
-            String fResp;
-            // 猜拳需要参数
-            if (record.getRpType() == 5) {
-                fResp = Fish.openRedPacket(openLog.getOid(), true);
-            } else {
-                fResp = Fish.openRedPacket(openLog.getOid(), false);
-            }
-            // 获取打开信息
-            JSONObject rp = JSON.parseObject(fResp);
-            // 获取列表
-            JSONArray who = rp.getJSONArray("who");
-            // 积分明细
-            int point = 0;
-            // 遍历
-            for (Object o : who) {
-                // 获取人
-                JSONObject w = (JSONObject) o;
-                if (w.getString("userName").equals(whoGot)) {
-                    point = w.getInteger("userMoney");
-                    openLog.setMoney(point);
-                }
-            }
+            openLog.setOpened(0);
             openLog.setCreateTime(now);
             openLog.setUpdateTime(now);
             // 保存记录
             rpOpenLogMapper.insert(openLog);
-            // 存在 且是猜拳 且不是不是精灵发的
-            if (Objects.nonNull(record) && record.getRpType() == 5 && giveUno != 521) {
-                // 字符串
-                String gotNo = gotUno.toString(), giveNo = giveUno.toString();
-                // got 赢了
-                if (point > 0) {
-                    winner(gotNo, point, now);
-                    loser(giveNo, point, now);
-                }
-                // give 赢了
-                if (point < 0) {
-                    winner(giveNo, Math.abs(point), now);
-                    loser(gotNo, Math.abs(point), now);
-                }
-                // 平手不算
-            }
         } catch (Exception e) {
             log.error("这可不能没了...", e);
             Fish.sendMsg("@" + RedisUtil.get(Const.ADMIN) + " . 老板, 红包打开记录入库失败啦. 快来救命呀~");
@@ -451,23 +414,18 @@ public class FService {
         if (StringUtils.isNotBlank(RedisUtil.get(Const.CURRENCY_HAPPY_TIME))) {
             rate = new SecureRandom().nextInt(64) + 1;
             Fish.sendMsg("尊敬的渔民大人 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 您参与欢乐时光本次费率为 ..." + rate + "积分/个");
-            // 鱼翅个数 缓存 key
-            String key = Const.CURRENCY_TIMES_PREFIX + userName;
             switch (rate) {
                 case 1:
-                    // 补偿次数
-                    RedisUtil.modify(key, 33);
-                    Fish.send2User(userName, "您获得了 ...33 个... 鱼翅. 已到账...[Cause: 欢乐时光极值奖励---1积分/段]");
+                    // 补偿
+                    CurrencyService.sendCurrency(userName, 6, "欢乐时光极值奖励---1积分/段");
                     break;
                 case 32:
-                    // 补偿次数
-                    RedisUtil.modify(key, 1);
-                    Fish.send2User(userName, "您获得了 ...1 个... 鱼翅. 已到账...[Cause: 欢乐时光平价奖励---32积分/段]");
+                    // 补偿
+                    CurrencyService.sendCurrency(userName, 1, "欢乐时光极值奖励---平价");
                     break;
                 case 64:
-                    // 补偿次数
-                    RedisUtil.modify(key, 44);
-                    Fish.send2User(userName, "您获得了 ...44 个... 鱼翅. 已到账...[Cause: 欢乐时光极值奖励---64积分/段]");
+                    // 补偿
+                    CurrencyService.sendCurrency(userName, 9, "欢乐时光极值奖励---64积分/段");
                     break;
                 default:
                     // 别的什么都不做
@@ -552,13 +510,11 @@ public class FService {
      */
     public void buyCurrency(Long oId, String userName, Integer money, int fRate, boolean isHappy) {
         // 打开红包
-        if (StringUtils.isNotBlank(Fish.openRedPacket(oId, false))) {
+        if (StringUtils.isBlank(Fish.openRedPacket(oId, false))) {
             // 如果失败了, 就提示
             Fish.send2User(userName, "尊敬的财阀大人 . 我打不开你的红包啦. 快截图去找我老板 ...");
             return;
         }
-        // 鱼翅代码 缓存 key
-        String key = Const.CURRENCY_TIMES_PREFIX + userName;
         // 次数
         int count = money / fRate;
         // 涨价超过 32 了?
@@ -569,7 +525,7 @@ public class FService {
                 // 发送设置
                 Fish.send2User(userName, "尊敬的渔民大人 . 您的鱼翅兑换失败(~~买不到~~)~ 赠送一次(次数已增加), 仅此一次~ 下不为例!, 兑换编号:" + oId);
                 // 当前消耗一次. 下次继续 如果有 key. 就叠加
-                sendCurrency(userName, count, "积分兑换鱼翅失败(~~买不到, 赠送一次(次数已增加), 仅此一次下不为例!~~), 兑换编号 : " + oId);
+                CurrencyService.sendCurrency(userName, count, "积分兑换鱼翅失败(~~买不到, 赠送一次(次数已增加), 仅此一次下不为例!~~), 兑换编号 : " + oId);
                 RedisUtil.set(freeKey, DateUtil.nowStr());
             } else {
                 // 发送设置
@@ -577,51 +533,7 @@ public class FService {
             }
         } else {
             // 发送设置
-            sendCurrency(userName, count, "积分兑换鱼翅, 兑换编号 : " + oId);
-        }
-    }
-
-    /**
-     * 发送对象
-     *
-     * @param user
-     * @param count
-     * @return
-     */
-    public void sendCurrency(String user, int count, String ref) {
-        if (StringUtils.isBlank(user)) {
-            return;
-        }
-        // 鱼翅个数 缓存 key
-        String key = Const.CURRENCY_TIMES_PREFIX + user;
-        // 补偿次数
-        RedisUtil.modify(key, count);
-        if (count >= 0) {
-            Fish.send2User(user, "您获得了 ..." + count + " 个... 鱼翅. 已到账...[Cause: " + ref + "]");
-        } else {
-            Fish.send2User(user, "您失去了 ..." + Math.abs(count) + " 个... 鱼翅. 已扣除...[Cause: " + ref + "]");
-        }
-    }
-
-    /**
-     * 发送对象  鱼丸
-     *
-     * @param user
-     * @param count
-     * @return
-     */
-    public void sendCurrencyFree(String user, int count, String ref) {
-        if (StringUtils.isBlank(user)) {
-            return;
-        }
-        // 鱼丸个数 缓存 key
-        String key = Const.CURRENCY_TIMES_FREE_PREFIX + user;
-        // 补偿次数
-        RedisUtil.modify(key, count);
-        if (count >= 0) {
-            Fish.send2User(user, "您获得了 ..." + count + " 个... 鱼丸. 已到账...[Cause: " + ref + "]");
-        } else {
-            Fish.send2User(user, "您失去了 ..." + Math.abs(count) + " 个... 鱼丸. 已扣除...[Cause: " + ref + "]");
+            CurrencyService.sendCurrency(userName, count, "积分兑换鱼翅, 兑换编号 : " + oId);
         }
     }
 
@@ -714,6 +626,122 @@ public class FService {
         cond.notIn("user_no", Const.ROBOT_LIST);
         cond.between("create_time", DateUtil.formatDay(start), DateUtil.formatDay(end));
         return msgRecordMapper.selectList(cond);
+    }
+
+    /**
+     * 处理红包记录
+     */
+    public void dealRpOpenLog() {
+        QueryWrapper<RpOpenLog> roCond = new QueryWrapper<>();
+        // 所有待处理的
+        roCond.eq("opened", 0);
+        // 获取所有对象
+        List<RpOpenLog> rpOpenLogs = rpOpenLogMapper.selectList(roCond);
+        if (CollUtil.isEmpty(rpOpenLogs)) {
+            log.info("没有需要处理的打开对象");
+            return;
+        }
+        // 按照oid 分组
+        Map<Long, List<RpOpenLog>> oids = rpOpenLogs.stream().collect(groupingBy(RpOpenLog::getOid));
+        // 查出所有原始记录
+        QueryWrapper<RpRecord> recordCond = new QueryWrapper<>();
+        recordCond.in("oid", oids.keySet());
+        // 所有原始记录
+        List<RpRecord> rpRecords = rpRecordMapper.selectList(recordCond);
+        if (CollUtil.isEmpty(rpRecords)) {
+            log.info("发生异常 没有红包原始数据");
+            Fish.send2User(RedisUtil.get(Const.ADMIN), "红包记录异常, 没有原始记录信息..." + JSON.toJSONString(oids.keySet()));
+            return;
+        }
+        // 分组
+        Map<Long, RpRecord> rMap = rpRecords.stream().collect(Collectors.toMap(RpRecord::getOid, Function.identity()));
+        // 遍历oid 分别处理 一次五个吧
+        int count = 0;
+        for (Long oid : oids.keySet()) {
+            if (count > 5) {
+                return;
+            }
+            dealRpOpenLog(oid, oids.get(oid), rMap.get(oid));
+            // +1
+            count++;
+        }
+    }
+
+    /**
+     * 处理红包打开的明细记录
+     *
+     * @param oid
+     * @param rpOpenLogs
+     * @param record
+     */
+    private void dealRpOpenLog(Long oid, List<RpOpenLog> rpOpenLogs, RpRecord record) {
+        if (Objects.isNull(record)) {
+            Fish.send2User(RedisUtil.get(Const.ADMIN), "红包记录异常, 没有原始记录信息...A..." + oid);
+            return;
+        }
+        // 发送人
+        Integer giveUno = record.getUserNo();
+        // 打开红包
+        String fResp;
+        // 猜拳需要参数
+        if (record.getRpType() == 5) {
+            fResp = Fish.openRedPacket(oid, true);
+        } else {
+            fResp = Fish.openRedPacket(oid, false);
+        }
+        log.info("红包打开响应=>{}", fResp);
+        // 获取列表
+        JSONArray who;
+        try {
+            // 获取打开信息
+            JSONObject rp = JSON.parseObject(fResp);
+            // 获取列表
+            who = rp.getJSONArray("who");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Fish.send2User(RedisUtil.get(Const.ADMIN), "红包记录异常, 没有原始记录信息...B..." + oid);
+            return;
+        }
+        // 当前时间
+        LocalDateTime now = LocalDateTime.now();
+        // 用户打开记录
+        Map<Integer, RpOpenLog> userRpOpen = rpOpenLogs.stream().collect(Collectors.toMap(RpOpenLog::getUserNo, Function.identity()));
+        // 遍历
+        for (Object o : who) {
+            // 积分明细
+            int point;
+            // 获取人
+            JSONObject w = (JSONObject) o;
+            // 获取用户信息
+            User user = getUser(w.getString("userName"));
+            // 用户打开记录
+            RpOpenLog openLog = userRpOpen.get(user.getUserNo());
+            // 不为空则更新
+            if (Objects.nonNull(openLog)) {
+                point = w.getInteger("userMoney");
+                openLog.setMoney(point);
+                openLog.setOpened(1);
+                openLog.setUpdateTime(now);
+                // 更新信息
+                rpOpenLogMapper.updateById(openLog);
+                // 存在 且是猜拳 且不是不是精灵发的
+                if (record.getRpType() == 5 && giveUno != 521) {
+                    // 字符串
+                    String gotNo = user.getUserNo().toString(), giveNo = giveUno.toString();
+                    // got 赢了
+                    if (point > 0) {
+                        winner(gotNo, point, now);
+                        loser(giveNo, point, now);
+                    }
+                    // give 赢了
+                    if (point < 0) {
+                        winner(giveNo, Math.abs(point), now);
+                        loser(gotNo, Math.abs(point), now);
+                    }
+                    // 平手不算
+                }
+            }
+        }
     }
 
     /**

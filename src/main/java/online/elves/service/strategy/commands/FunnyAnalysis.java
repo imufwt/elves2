@@ -10,6 +10,7 @@ import online.elves.enums.CrLevel;
 import online.elves.enums.Words;
 import online.elves.mapper.entity.User;
 import online.elves.service.FService;
+import online.elves.service.CurrencyService;
 import online.elves.service.strategy.CommandAnalysis;
 import online.elves.third.apis.Joke;
 import online.elves.third.fish.Fish;
@@ -94,12 +95,12 @@ public class FunnyAnalysis extends CommandAnalysis {
                             case 1:
                                 int s1 = new SecureRandom().nextInt(3);
                                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我打劫回来了~ 抢到了... " + s1 + "  个`鱼翅`...等下你要分我点啊~ ^_^");
-                                fService.sendCurrency(userName, s1, "聊天室活动-打劫");
+                                CurrencyService.sendCurrency(userName, s1, "聊天室活动-打劫");
                                 break;
                             case 2:
                                 int s2 = new SecureRandom().nextInt(11);
                                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我打劫回来了~ 抢到了... " + s2 + "  个`鱼丸`...等下你要分我点啊~ ^_^");
-                                fService.sendCurrencyFree(userName, s2, "聊天室活动-打劫");
+                                CurrencyService.sendCurrencyFree(userName, s2, "聊天室活动-打劫");
                                 break;
                             case 3:
                                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哎呦呦...我头晕~ 打劫的事情改日再说吧...");
@@ -107,7 +108,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                             case 4:
                                 int rz = new SecureRandom().nextInt(3) + 1;
                                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哼, 一天啥事儿没干净陪你打劫了. 还啥也抢不到... 撂挑子不干了");
-                                fService.sendCurrencyFree(userName, -rz, "聊天室活动-打劫-无功而返");
+                                CurrencyService.sendCurrencyFree(userName, -rz, "聊天室活动-打劫-无功而返");
                                 break;
                             default:
                                 break;
@@ -138,7 +139,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                     String zzkU = RedisUtil.get(rKey);
                     if (StringUtils.isBlank(zzkU)) {
                         // 可以沾
-                        fService.sendCurrencyFree(userName, new Random().nextInt(11), zzk);
+                        CurrencyService.sendCurrencyFree(userName, new Random().nextInt(11), zzk);
                         // 设置缓存 180 肯定大于活动时间
                         RedisUtil.set(rKey, userName, 180);
                     } else {
@@ -274,7 +275,7 @@ public class FunnyAnalysis extends CommandAnalysis {
             res.append("|").append(p.addAndGet(1));
             // 用户
             User uname = fService.getUser(o.getString("username"));
-            res.append("|").append(uname.getUserNick()).append("(").append(uname.getUserName()).append(")");
+            res.append("|").append(uname.getUserNick()).append("([").append(uname.getUserName()).append("](https://maze.hancel.org/u/").append(uname.getUserName()).append("))");
             res.append("|").append(o.getInteger("stage"));
             res.append("|").append(o.getInteger("step"));
             res.append("|").append("\n");

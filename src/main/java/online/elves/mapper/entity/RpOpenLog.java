@@ -37,6 +37,12 @@ public class RpOpenLog implements Serializable {
      * 红包金额
      */
     private Integer money;
+    /**
+     * 开启状态
+     * 0 未处理
+     * 1 已处理
+     */
+    private Integer opened;
 
     /**
      * 创建时间

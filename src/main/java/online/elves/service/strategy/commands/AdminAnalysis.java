@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.enums.CrLevel;
 import online.elves.service.FService;
+import online.elves.service.CurrencyService;
 import online.elves.service.strategy.CommandAnalysis;
 import online.elves.third.fish.Fish;
 import online.elves.utils.RedisUtil;
@@ -31,7 +32,7 @@ public class AdminAnalysis extends CommandAnalysis {
      * 关键字
      */
     private static final List<String> keys =
-            Arrays.asList("送鱼翅", "送鱼丸", "欢乐时光", "天降鱼丸", "退费", "惹不起");
+            Arrays.asList("送鱼翅", "送鱼丸", "欢乐时光", "天降鱼丸", "退费", "惹不起", "巡逻", "停止检查");
 
     @Override
     public boolean check(String commonKey) {
@@ -46,11 +47,11 @@ public class AdminAnalysis extends CommandAnalysis {
             switch (commandKey) {
                 case "送鱼翅":
                     // 补偿鱼翅
-                    fService.sendCurrency(commandDesc.split("_")[0], Integer.valueOf(commandDesc.split("_")[1]), "渔场老板操作");
+                    CurrencyService.sendCurrency(commandDesc.split("_")[0], Integer.valueOf(commandDesc.split("_")[1]), "渔场老板操作");
                     break;
                 case "送鱼丸":
                     // 补偿鱼翅
-                    fService.sendCurrencyFree(commandDesc.split("_")[0], Integer.valueOf(commandDesc.split("_")[1]), "渔场老板操作");
+                    CurrencyService.sendCurrencyFree(commandDesc.split("_")[0], Integer.valueOf(commandDesc.split("_")[1]), "渔场老板操作");
                     break;
                 case "退费":
                     String un = commandDesc.split("_")[0];
@@ -83,6 +84,34 @@ public class AdminAnalysis extends CommandAnalysis {
                         RedisUtil.set(Const.OP_LIST, JSON.toJSONString(ops));
                     }
                     Fish.sendMsg("收到收到, 惹不起~");
+                    break;
+                case "巡逻":
+                    if (StringUtils.isBlank(commandDesc)) {
+                        Fish.send2User(RedisUtil.get(Const.ADMIN), "FWQZT 服务器状态, WH 维护, SXHC 刷新缓存.  巡逻/停止检查");
+                    } else {
+                        // 限制条件
+                        String cmd = RedisUtil.get(Const.PATROL_LIMIT_PREFIX + commandDesc);
+                        if (StringUtils.isBlank(cmd)) {
+                            Fish.sendMsg("报告, 正常执勤中~");
+                        } else {
+                            RedisUtil.del(Const.PATROL_LIMIT_PREFIX + commandDesc);
+                            Fish.sendMsg("收到, 开始执勤~");
+                        }
+                    }
+                    break;
+                case "停止检查":
+                    if (StringUtils.isNotBlank(commandDesc)) {
+                        // 限制条件
+                        String stop = RedisUtil.get(Const.PATROL_LIMIT_PREFIX + commandDesc);
+                        if (StringUtils.isBlank(stop)) {
+                            RedisUtil.set(Const.PATROL_LIMIT_PREFIX + commandDesc, commandDesc);
+                            Fish.sendMsg("收到, 已取消执勤~");
+                        } else {
+                            Fish.sendMsg("报告, 尚未开始执勤~");
+                        }
+                    } else {
+                        Fish.send2User(RedisUtil.get(Const.ADMIN), "FWQZT 服务器状态, WH 维护, SXHC 刷新缓存.  巡逻/停止检查");
+                    }
                     break;
                 default:
                     // 什么也不做

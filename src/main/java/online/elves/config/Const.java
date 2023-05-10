@@ -26,6 +26,10 @@ public class Const {
      * 大佬列表
      */
     public static String OP_LIST = "OP:LIST";
+    /**
+     * 执法限制
+     */
+    public static String PATROL_LIMIT_PREFIX = "PATROL:LIMIT:";
 
     /* ..................账号密码系列.............开始了............... */
     /**

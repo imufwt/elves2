@@ -45,7 +45,7 @@ public class AdAnalysis extends CommandAnalysis {
                 // 到今晚的时间差
                 int intValue;
                 // 替换换行符 并切割命令
-                String[] split = commandDesc.replaceAll("\\^", " ").split("&");
+                String[] split = commandDesc.replaceAll("☺️", " ").replaceAll("😄", "<br/>").split("\\^");
                 if (split.length > 1) {
                     // 指定截止时间
                     intValue = Long.valueOf(Duration.between(time, DateUtil.parseLdt(split[1])).getSeconds()).intValue();

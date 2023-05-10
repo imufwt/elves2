@@ -105,7 +105,7 @@ public class CrListener {
             case "redPacketStatus":
                 // 红包状态变更
                 log.info("接收到聊天室消息...{} 抢 到了 {} 发送的红包", crMsg.getWhoGot(), crMsg.getWhoGive());
-                // 保存红包打开记录
+                // 入库
                 fService.recordRpOpenLog(crMsg.getOId(), crMsg.getWhoGot(), crMsg.getWhoGive());
                 break;
             case "online":

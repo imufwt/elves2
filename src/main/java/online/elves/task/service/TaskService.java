@@ -2,10 +2,14 @@ package online.elves.task.service;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.mapper.entity.CurrencyLog;
+import online.elves.mapper.entity.RpOpenLog;
 import online.elves.mapper.entity.User;
 import online.elves.service.FService;
 import online.elves.third.fish.Fish;
@@ -330,5 +334,14 @@ public class TaskService {
             return matcher.group().replace("<", "").replace(">", "");
         }
         return null;
+    }
+
+    /**
+     * 处理红包打开记录
+     */
+    public void recordRpLog() {
+        // 开始处理红包打开记录
+        log.info("开始处理红包打开记录...");
+        fService.dealRpOpenLog();
     }
 }
