@@ -204,7 +204,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                         // 获取目标用户
                         User user = fService.getUser(target);
                         if (Objects.isNull(user)) {
-                            Fish.sendMsg("@" + userName + " 找不到用户[" + split[0] + "], 感谢老铁送给我老板的`鱼翅`...");
+                            Fish.send2User(userName, " 找不到用户[" + split[0] + "], 感谢老铁送给我老板的`鱼翅`...");
                             target = RedisUtil.get(Const.ADMIN);
                         }
                         // 自己送自己都改成送给admin
@@ -213,12 +213,12 @@ public class CurrencyAnalysis extends CommandAnalysis {
                             target = RedisUtil.get(Const.ADMIN);
                         }
                         // 扣减
-                        CurrencyService.sendCurrency(userName, -count, "赠送`鱼翅`给 " + target);
+                        CurrencyService.sendCurrency(userName, -count, "赠送`鱼翅`给 " + user.getUserNick() + "(" + target + ")");
                         // 增加
                         if (target.equals("xiaoIce")) {
                             CurrencyService.sendCurrency(target, count, userName + "|" + Objects.requireNonNull(Fish.getUser(userName)).getOId() + " 赠送`鱼翅`给你");
                         } else {
-                            CurrencyService.sendCurrency(target, count, userName + " 赠送`鱼翅`给你");
+                            CurrencyService.sendCurrency(target, count, fService.getUser(userName).getUserNick() + "(" + userName + ")" + " 赠送`鱼翅`给你");
                         }
                     }
                 } else {
@@ -264,7 +264,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                             // 获取目标用户
                             User user = fService.getUser(target);
                             if (Objects.isNull(user)) {
-                                Fish.sendMsg("@" + userName + " 找不到用户[" + split[0] + "], 感谢老铁送给我老板的`鱼翅`...");
+                                Fish.send2User(userName, " 找不到用户[" + split[0] + "], 感谢老铁送给我老板的`鱼翅`...");
                                 target = RedisUtil.get(Const.ADMIN);
                             }
                             // 自己送自己都改成送给admin
@@ -276,9 +276,9 @@ public class CurrencyAnalysis extends CommandAnalysis {
                             CurrencyService.sendCurrencyFree(userName, -count, "赠送`鱼丸`给 " + target);
                             // 增加
                             if (target.equals("xiaoIce")) {
-                                CurrencyService.sendCurrencyFree(target, count, userName + "|" + Objects.requireNonNull(Fish.getUser(userName)).getOId() + " 赠送`鱼丸`给你");
+                                CurrencyService.sendCurrency(target, count, userName + "|" + Objects.requireNonNull(Fish.getUser(userName)).getOId() + " 赠送`鱼丸`给你");
                             } else {
-                                CurrencyService.sendCurrencyFree(target, count, userName + " 赠送`鱼丸`给你");
+                                CurrencyService.sendCurrency(target, count, fService.getUser(userName).getUserNick() + "(" + userName + ")" + " 赠送`鱼丸`给你");
                             }
                         }
                     }
