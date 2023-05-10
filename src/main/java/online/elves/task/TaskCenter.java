@@ -37,12 +37,19 @@ public class TaskCenter {
     TaskService taskService;
 
     /**
+     * 十五秒一次
+     */
+    @Scheduled(cron = "0/15 0 * * * ?")
+    public void check15Sec() {
+        // 开红包
+        taskService.buyCurrency();
+    }
+
+    /**
      * 一分钟一次
      */
     @Scheduled(cron = "0 0/1 * * * ?")
     public void check1min() {
-        // 开红包
-        taskService.buyCurrency();
         // 记录红包
         taskService.recordRpLog();
     }

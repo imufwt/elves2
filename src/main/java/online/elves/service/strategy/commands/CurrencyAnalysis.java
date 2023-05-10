@@ -8,7 +8,6 @@ import online.elves.service.CurrencyService;
 import online.elves.service.FService;
 import online.elves.service.strategy.CommandAnalysis;
 import online.elves.third.fish.Fish;
-import online.elves.third.fish.model.FUser;
 import online.elves.utils.RedisUtil;
 import online.elves.utils.RegularUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +25,10 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class CurrencyAnalysis extends CommandAnalysis {
+    /**
+     * 货币交易全局锁
+     */
+    private static final Integer CURRENCY_CHANGE_LIMIT = 5;
 
     /**
      * 关键字
@@ -96,7 +99,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                 // 加锁  增加 CD
                 if (StringUtils.isBlank(RedisUtil.get("CURRENCY_CHANGE"))) {
                     // 兑换CD 15秒
-                    RedisUtil.set("CURRENCY_CHANGE", "limit", 15);
+                    RedisUtil.set("CURRENCY_CHANGE", "limit", CURRENCY_CHANGE_LIMIT);
                     // 鱼翅个数 缓存 key
                     int dTimes = CurrencyService.getCurrency(userName);
                     // 判断次数
@@ -138,7 +141,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                 // 加锁  增加 CD
                 if (StringUtils.isBlank(RedisUtil.get("CURRENCY_CHANGE"))) {
                     // 兑换CD 15秒
-                    RedisUtil.set("CURRENCY_CHANGE", "limit", 15);
+                    RedisUtil.set("CURRENCY_CHANGE", "limit", CURRENCY_CHANGE_LIMIT);
                     // 鱼翅个数
                     int cTimes = CurrencyService.getCurrency(userName);
                     // 判断次数
@@ -174,7 +177,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                 // 加锁  增加 CD
                 if (StringUtils.isBlank(RedisUtil.get("CURRENCY_CHANGE"))) {
                     // 兑换CD 15秒
-                    RedisUtil.set("CURRENCY_CHANGE", "limit", 15);
+                    RedisUtil.set("CURRENCY_CHANGE", "limit", CURRENCY_CHANGE_LIMIT);
                     // 鱼翅个数
                     int sendTimes = CurrencyService.getCurrency(userName);
                     // 判断次数
@@ -229,7 +232,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                 // 加锁  增加 CD
                 if (StringUtils.isBlank(RedisUtil.get("CURRENCY_CHANGE"))) {
                     // 兑换CD 15秒
-                    RedisUtil.set("CURRENCY_CHANGE", "limit", 15);
+                    RedisUtil.set("CURRENCY_CHANGE", "limit", CURRENCY_CHANGE_LIMIT);
                     // 鱼翅个数
                     int sendFreeTimes = CurrencyService.getCurrency(userName);
                     // 判断次数
@@ -276,9 +279,9 @@ public class CurrencyAnalysis extends CommandAnalysis {
                             CurrencyService.sendCurrencyFree(userName, -count, "赠送`鱼丸`给 " + target);
                             // 增加
                             if (target.equals("xiaoIce")) {
-                                CurrencyService.sendCurrency(target, count, userName + "|" + Objects.requireNonNull(Fish.getUser(userName)).getOId() + " 赠送`鱼丸`给你");
+                                CurrencyService.sendCurrencyFree(target, count, userName + "|" + Objects.requireNonNull(Fish.getUser(userName)).getOId() + " 赠送`鱼丸`给你");
                             } else {
-                                CurrencyService.sendCurrency(target, count, fService.getUser(userName).getUserNick() + "(" + userName + ")" + " 赠送`鱼丸`给你");
+                                CurrencyService.sendCurrencyFree(target, count, fService.getUser(userName).getUserNick() + "(" + userName + ")" + " 赠送`鱼丸`给你");
                             }
                         }
                     }
