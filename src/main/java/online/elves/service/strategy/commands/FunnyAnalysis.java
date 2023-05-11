@@ -12,6 +12,7 @@ import online.elves.mapper.entity.User;
 import online.elves.service.FService;
 import online.elves.service.CurrencyService;
 import online.elves.service.strategy.CommandAnalysis;
+import online.elves.third.apis.IceNet;
 import online.elves.third.apis.Joke;
 import online.elves.third.fish.Fish;
 import online.elves.utils.DateUtil;
@@ -49,6 +50,10 @@ public class FunnyAnalysis extends CommandAnalysis {
      * 打劫概率
      */
     private static TreeMap<Integer, Double> odds = new TreeMap<>();
+    /**
+     * 小冰出手了
+     */
+    private static TreeMap<Integer, Double> odds_ice = new TreeMap<>();
 
     // 初始化概率
     static {
@@ -62,6 +67,13 @@ public class FunnyAnalysis extends CommandAnalysis {
         odds.put(3, 0.20);
         // 什么也没有 随机扣1-3个鱼丸
         odds.put(4, 0.20);
+
+        // 32-64积分
+        odds_ice.put(0, 0.20);
+        // 0-2 个鱼翅
+        odds_ice.put(1, 0.40);
+        // 0-10 个鱼丸
+        odds_ice.put(2, 0.40);
     }
 
     @Override
@@ -85,21 +97,32 @@ public class FunnyAnalysis extends CommandAnalysis {
                         LocalDateTime now = LocalDateTime.now();
                         // 第二天0点过期
                         RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
+                        // 小冰用户亲密度
+                        int userIntimacy = IceNet.getUserIntimacy(userName);
+                        // 奖品等级
+                        int lv = LotteryUtil.getLv(odds);
+                        // 小冰助力
+                        boolean ice = false;
+                        // 小冰亲密度大于1000 则打劫小冰会出手
+                        if (userIntimacy > 1000) {
+                            lv = LotteryUtil.getLv(odds_ice);
+                            ice = true;
+                        }
                         // 计算概率 送东西
-                        switch (LotteryUtil.getLv(odds)) {
+                        switch (lv) {
                             case 0:
                                 int money = new SecureRandom().nextInt(32) + 32;
-                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 承你吉言.我打劫回来咯~ 我抢到了300积分, 可是半路摔了一跤, 就剩... " + money + "  积分...了, ┭┮﹏┭┮ 呜呜呜~");
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 承你吉言.我" + (ice ? "和小冰" : "") + "打劫回来咯~ 我抢到了300积分, 可是半路摔了一跤, 就剩... " + money + "  积分...了, ┭┮﹏┭┮ 呜呜呜~");
                                 Fish.sendSpecify(userName, money, userName + ", 喏~ 给你!");
                                 break;
                             case 1:
                                 int s1 = new SecureRandom().nextInt(3);
-                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我打劫回来了~ 抢到了... " + s1 + "  个`鱼翅`...等下你要分我点啊~ ^_^");
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我" + (ice ? "和小冰" : "") + "打劫回来了~ 抢到了... " + s1 + "  个`鱼翅`...等下你要分我点啊~ ^_^");
                                 CurrencyService.sendCurrency(userName, s1, "聊天室活动-打劫");
                                 break;
                             case 2:
                                 int s2 = new SecureRandom().nextInt(11);
-                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我打劫回来了~ 抢到了... " + s2 + "  个`鱼丸`...等下你要分我点啊~ ^_^");
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 哇.我" + (ice ? "和小冰" : "") + "打劫回来了~ 抢到了... " + s2 + "  个`鱼丸`...等下你要分我点啊~ ^_^");
                                 CurrencyService.sendCurrencyFree(userName, s2, "聊天室活动-打劫");
                                 break;
                             case 3:
@@ -125,7 +148,7 @@ public class FunnyAnalysis extends CommandAnalysis {
             case "捞鱼丸":
                 String zzk = RedisUtil.get(Const.CURRENCY_FREE_TIME);
                 if (StringUtils.isBlank(zzk)) {
-                    Fish.send2User(userName, "渔民大人~ 心急吃不了热豆腐啦~ 现在填空一篇晴朗, 哪里像有鱼丸的样子呀. 嘻嘻");
+                    Fish.send2User(userName, "渔民大人~ 心急吃不了热豆腐啦~ 现在天空一篇晴朗, 哪里像有鱼丸的样子呀. 嘻嘻");
                 } else {
                     // 当前兑换次数
                     String times = RedisUtil.get(Const.CURRENCY_TIMES_PREFIX + userName);
@@ -199,13 +222,13 @@ public class FunnyAnalysis extends CommandAnalysis {
                             // 第二天0点过期
                             RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
                             // CD 1 min
-                            RedisUtil.set(cd, userName, 60);
+                            RedisUtil.set(cd, userName, 10);
                             // 发红包
                             Fish.sendSpecify(userName, 50, userName + " 给, 彰显实力!");
                             // 记录排行榜
                             RedisUtil.incrScore(Const.RANKING_PREFIX + "KFC", String.valueOf(Fish.getUserNo(userName)), 1);
                         } else {
-                            Fish.sendMsg("@" + userName + " 不要复读, 不要着急. 我一分钟只能发一个哦~");
+                            Fish.sendMsg("@" + userName + " 不要复读, 不要着急. 我一分钟只能发六个哦~(其实能发十个, 但是我就不~ 嘻嘻)");
                         }
                     } else {
                         Fish.sendMsg("@" + userName + " 怎么肥事儿~ 已经给你看过鱼排实力啦~");

@@ -37,28 +37,19 @@ public class TaskCenter {
     TaskService taskService;
 
     /**
-     * 十五秒一次
+     * 五秒一次
      */
-    @Scheduled(cron = "0/15 0 * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
     public void check15Sec() {
         // 开红包
         taskService.buyCurrency();
     }
 
     /**
-     * 一分钟一次
+     * 心跳检测 30秒
      */
-    @Scheduled(cron = "0 0/1 * * * ?")
-    public void check1min() {
-        // 记录红包
-        taskService.recordRpLog();
-    }
-
-    /**
-     * 心跳检测 三分钟一次
-     */
-    @Scheduled(cron = "30 0/2 * * * ?")
-    public void check3min() {
+    @Scheduled(cron = "0/30 * * * * ?")
+    public void check30Sec() {
         // 如果对象全部空了
         if (CollUtil.isEmpty(WsClient.session)) {
             // 重建
@@ -106,6 +97,15 @@ public class TaskCenter {
         }
         // 回写
         WsClient.session = temp;
+    }
+
+    /**
+     * 一分钟一次
+     */
+    @Scheduled(cron = "0 0/1 * * * ?")
+    public void check1min() {
+        // 记录红包
+        taskService.recordRpLog();
     }
 
     /**

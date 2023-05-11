@@ -63,6 +63,16 @@ public class Const {
      */
     public static String JU_HE_API = "APIS:SECRET:JU_HE";
 
+    /**
+     * 小冰
+     */
+    public static String ICE_KEY = "APIS:ICE:KEY";
+
+    /**
+     * 小冰
+     */
+    public static String ICE_SECRET = "APIS:ICE:SECRET";
+
     /* ..................账号密码系列.............结束了............... */
 
     /**

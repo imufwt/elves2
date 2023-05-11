@@ -22,7 +22,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -131,6 +134,8 @@ public class TaskService {
         if (resp.isOk()) {
             ArticlesObj obj = JSON.parseObject(JSON.toJSONString(resp.getData()), ArticlesObj.class);
             collectOids(ids, obj);
+            // 检查活跃度
+            checkLiveness(obj);
         }
         // 获取新人报道对象
         resp = Fish.getArticlesTag("新人报道", 0, 1, 5);
@@ -154,6 +159,59 @@ public class TaskService {
             checkReply(id);
         }
         log.info("...检查新人报道 1.0 结束...");
+    }
+
+    /**
+     * 检查文章活跃度
+     *
+     * @param obj
+     */
+    private void checkLiveness(ArticlesObj obj) {
+        // 今天
+        LocalDate now = LocalDate.now();
+        // 获取文章列表详细内容
+        List<Articles> articlesList = obj.getArticles();
+        // 不为空且有内容
+        if (CollUtil.isNotEmpty(articlesList)) {
+            log.info("开始检查文章, 计算作者活跃度...");
+            // 遍历 计算用户活跃度 第一篇文章增加45  删除无法感知... 嘻嘻
+            for (Articles o : articlesList) {
+                // 文章创建时间 转义
+                LocalDateTime time = DateUtil.parseLdt(o.getArticleCreateTimeStr());
+                if (time.toLocalDate().isBefore(now)) {
+                    // 不是今天的文章直接略过
+                    continue;
+                }
+                // 文章作者
+                String userName = o.getArticleAuthorName();
+                // 时间间隔
+                String cdKey = "user:article:liveness:" + userName;
+                // 当前活跃度
+                String userActivity = Const.USER_ACTIVITY + userName;
+                // 查询能否获得间隔锁  可以获得就计算, 否则啥也不干
+                if (StringUtils.isBlank(RedisUtil.get(cdKey))) {
+                    // key 时间差
+                    Integer diff = Long.valueOf(Duration.between(time, now.plusDays(1).atStartOfDay()).getSeconds()).intValue();
+                    // 当前活跃
+                    String cs = RedisUtil.get(userActivity);
+                    // 当前消耗一次. 下次继续 如果有 key. 就叠加
+                    if (StringUtils.isBlank(cs)) {
+                        RedisUtil.set(userActivity, "45", diff.longValue());
+                    } else {
+                        // 否则增加 45
+                        BigDecimal add = new BigDecimal(cs).add(new BigDecimal("45"));
+                        if (add.longValue() > 100) {
+                            add = new BigDecimal("100");
+                        }
+                        RedisUtil.set(userActivity, add.toString(), diff);
+                    }
+                    // 一天一次
+                    RedisUtil.set(cdKey, o.getOId().toString(), diff);
+                }
+            }
+        } else {
+            // 没有最新文章...科学么?
+        }
     }
 
     /**

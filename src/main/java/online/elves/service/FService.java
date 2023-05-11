@@ -109,6 +109,13 @@ public class FService {
         }
         // 一次只有一个
         User user = userMapper.selectOne(cond);
+        // 差不多多查询一次
+        if (Objects.isNull(user)) {
+            cond = new QueryWrapper<>();
+            cond.eq("user_no", fUser.getUserNo());
+            user = userMapper.selectOne(cond);
+        }
+        // 实在没有再更新
         if (Objects.isNull(user)) {
             // 新增
             user = new User();
@@ -171,6 +178,12 @@ public class FService {
         try {
             // 获取用户
             User user = getUser(null, userName);
+            // 没找到就走一遍鱼排查询
+            if (Objects.isNull(user)) {
+                FUser fUser = Fish.getUser(userName);
+                assert fUser != null;
+                user = getUser(fUser.getUserNo(), null);
+            }
             // 获取用户编码 自己人 不用检查了
             Integer user_no = user.getUserNo();
             if (Objects.isNull(user_no)) {
@@ -217,7 +230,7 @@ public class FService {
             // 文字消息再计算能活跃 弹幕不算
             if (isMsg) {
                 // 计算用户活跃度
-                calActivity(userName);
+                incActivity(userName);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -440,12 +453,11 @@ public class FService {
     }
 
     /**
-     * 计算用户活跃度 每次间隔三十秒发言, 活跃度增加 1.67
+     * 计算用户活跃度 每次间隔60秒发言, 活跃度增加 0.6
      * 无法感知其余操作, 目前活跃度只能是一个大概范围
-     *
      * @param userName
      */
-    public void calActivity(String userName) {
+    public void incActivity(String userName) {
         // 当前日期
         LocalDate now = LocalDate.now();
         // 计算宵禁
@@ -458,26 +470,25 @@ public class FService {
         String cdKey = Const.USER_ACTIVITY_LIMIT + userName;
         // 当前活跃度
         String userActivity = Const.USER_ACTIVITY + userName;
-        // 可以计算的次数
-        String calTimes = RedisUtil.get(cdKey);
         // 查询能否获得间隔锁  可以获得就计算, 否则啥也不干
-        if (StringUtils.isBlank(calTimes)) {
-            // 加个计算
-            incLiveness(now, time, userActivity);
-            // 10 min cd
-            RedisUtil.set(cdKey, "9", 10 * 60);
-        } else {
-            // 剩余计算次数
-            int curTimes = Integer.parseInt(calTimes);
-            // 当前没次数了
-            if (curTimes < 1) {
-                return;
+        if (StringUtils.isBlank(RedisUtil.get(cdKey))) {
+            // key 时间差
+            Integer diff = Long.valueOf(Duration.between(time, now.plusDays(1).atStartOfDay()).getSeconds()).intValue();
+            // 当前活跃
+            String cs = RedisUtil.get(userActivity);
+            // 当前消耗一次. 下次继续 如果有 key. 就叠加
+            if (StringUtils.isBlank(cs)) {
+                RedisUtil.set(userActivity, "0.6", diff.longValue());
+            } else {
+                // 否则增加 1.67
+                BigDecimal add = new BigDecimal(cs).add(new BigDecimal("0.6"));
+                if (add.longValue() > 100) {
+                    add = new BigDecimal("100");
+                }
+                RedisUtil.set(userActivity, add.toString(), diff);
             }
-            // 加个计算
-            incLiveness(now, time, userActivity);
-            // 10 min cd
-            RedisUtil.reSet(cdKey, String.valueOf(curTimes - 1), 10 * 60);
-
+            // 30秒 cd
+            RedisUtil.set(cdKey, "1", 60);
         }
     }
 
