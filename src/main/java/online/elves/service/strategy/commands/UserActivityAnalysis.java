@@ -35,19 +35,34 @@ public class UserActivityAnalysis extends CommandAnalysis {
     public void process(String commandKey, String commandDesc, String userName) {
         // 当前活跃度
         String uAct = RedisUtil.get(Const.USER_ACTIVITY + userName);
+        // 时间间隔
+        String limit = RedisUtil.get("CALL:FISH:LIMIT:" + userName);
+        if (StringUtils.isBlank(limit)) {
+            assert uAct != null;
+            if (!uAct.equals("100")) {
+                // 用户当前活跃度
+                String userLiveness = Fish.getUserLiveness(userName);
+                if (StringUtils.isNotBlank(userLiveness)) {
+                    // 不为空才处理
+                    uAct = userLiveness;
+                    RedisUtil.set("CALL:FISH:LIMIT:" + userName, uAct, 30);
+                }
+            }
+        }
         if (StringUtils.isBlank(uAct)) {
-            Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你当前活跃度可能为 `0.6%` ~ 保持 `60` 秒一次发言, 预计 `166.5` 分钟后满活跃~");
+            Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . \n\n> 你当前活跃度可能为 `0.6%` ~ 保持 `60` 秒一次发言, 预计 `166.5` 分钟后满活跃~");
         } else {
             if ("100".equals(uAct)) {
-                Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你当前活跃度可能为 `100%` ~ 水满咯. 做点自己想做的吧😋...比如~~兑换个鱼翅玩玩~~");
+                Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . \n\n>  你当前活跃度可能为 `100%` ~ 水满咯. 做点自己想做的吧😋...比如~~兑换个鱼翅玩玩~~");
             } else {
-                Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你当前活跃度可能为 `" + uAct + "%` ~ 保持 `60` 秒一次发言, 预计 `" + calFull(uAct) + "` 分钟后满活跃~");
+                Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . \n\n>  你当前活跃度可能为 `" + uAct + "%` ~ 保持 `60` 秒一次发言, 预计 `" + calFull(uAct) + "` 分钟后满活跃~");
             }
         }
     }
 
     /**
      * 计算预计多少秒后满活跃
+     *
      * @param uAct
      * @return
      */
@@ -64,5 +79,4 @@ public class UserActivityAnalysis extends CommandAnalysis {
         // 返回结果
         return decimal.toString();
     }
-
 }

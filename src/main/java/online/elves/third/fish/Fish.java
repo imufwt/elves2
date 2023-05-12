@@ -285,6 +285,22 @@ public class Fish {
     }
 
     /**
+     * 获取指定用户的活跃度
+     */
+    public static String getUserLiveness(String uName) {
+        // 查询参数
+        JSONObject body = new JSONObject();
+        // 通用秘钥
+        body.put("goldFingerKey", RedisUtil.get("SUPER:KEY:LIVE"));
+        body.put("userName", uName);
+        String postSpec = FUtil.postSpec("https://fishpi.cn/user/liveness", "", body.toJSONString());
+        if (StringUtils.isBlank(postSpec)) {
+            return null;
+        }
+        return JSON.parseObject(postSpec).getString("liveness");
+    }
+
+    /**
      * 评论文章
      *
      * @param oId

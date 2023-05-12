@@ -15,10 +15,7 @@ import online.elves.service.strategy.CommandAnalysis;
 import online.elves.third.apis.IceNet;
 import online.elves.third.apis.Joke;
 import online.elves.third.fish.Fish;
-import online.elves.utils.DateUtil;
-import online.elves.utils.LotteryUtil;
-import online.elves.utils.RedisUtil;
-import online.elves.utils.StrUtils;
+import online.elves.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +41,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "15", "欧皇们", "非酋们", "探路者");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "15", "欧皇们", "非酋们", "探路者", "触发词");
 
     /**
      * 打劫概率
@@ -271,6 +268,43 @@ public class FunnyAnalysis extends CommandAnalysis {
                 buildMazeTable(mazeData, mRes);
                 // 发送消息
                 Fish.sendMsg(mRes.toString());
+                break;
+            case "触发词":
+                // 违禁词
+                String bWords = RedisUtil.get("BLACK:WORD");
+                if (StringUtils.isBlank(bWords)) {
+                    bWords = "";
+                }
+                if (RegularUtil.isOrderCase(commandDesc) && !bWords.contains(commandDesc)) {
+                    // 加锁  增加 CD
+                    if (StringUtils.isBlank(RedisUtil.get("CHANGE_CMD_WORD"))) {
+                        // 修改 15秒
+                        RedisUtil.set("CHANGE_CMD_WORD", "limit", 15);
+                        // 鱼翅个数
+                        int cTimes = CurrencyService.getCurrency(userName);
+                        // 判断次数
+                        if (cTimes < 0) {
+                            // 啥也不做
+                            Fish.sendMsg("亲爱的 @" + userName + " . 你还没有成为渔民呢(~~╭(╯^╰)╮~~)");
+                        } else {
+                            // 需要消耗66个鱼翅
+                            int count = 66;
+                            // 不够扣
+                            if (count > cTimes) {
+                                Fish.send2User(userName, "亲爱的渔民大人 . 执行自定义触发词需要 [" + count + "] `鱼翅`~ 但是你背包里没有那么多啦~");
+                            } else {
+                                // 增加鱼翅
+                                CurrencyService.sendCurrency(userName, -count, "触发词修改消耗");
+                                // 设置限定词
+                                RedisUtil.set(Const.CMD_USER_SET + userName, "凌," + commandDesc);
+                            }
+                        }
+                    } else {
+                        Fish.send2User(userName, "亲爱的渔民大人. 业务繁忙, 请稍后重试(~~╭(╯^╰)╮~~), 全局锁`15s`");
+                    }
+                } else {
+                    Fish.send2User(userName, "亲爱的渔民大人. 触发词为英文数字或中文字符[1,3]个哦. 不要瞎写(~~也许你有违禁词~~)!!!");
+                }
                 break;
             default:
                 // 什么也不用做

@@ -12,7 +12,6 @@ import java.util.List;
  */
 @Component
 public class Const {
-
     /**
      * 老子是天道
      */
@@ -30,6 +29,10 @@ public class Const {
      * 执法限制
      */
     public static String PATROL_LIMIT_PREFIX = "PATROL:LIMIT:";
+    /**
+     * 用户自定义触发词限定
+     */
+    public static final String CMD_USER_SET = "CMD:USER:SET:";
 
     /* ..................账号密码系列.............开始了............... */
     /**

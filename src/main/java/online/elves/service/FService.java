@@ -196,7 +196,7 @@ public class FService {
             record.setOid(oId);
             record.setUserNo(user_no);
             // 类型 不是消息就是红包
-            int type = isMsg ? switchType(md) : 0;
+            int type = isMsg ? switchType(md, RedisUtil.get(Const.CMD_USER_SET + userName)) : 0;
             // 不是小冰和精灵 这些机器人. 计入排行榜
             if (!Const.ROBOT_LIST.contains(user_no)) {
                 // 用户编号
@@ -455,6 +455,7 @@ public class FService {
     /**
      * 计算用户活跃度 每次间隔60秒发言, 活跃度增加 0.6
      * 无法感知其余操作, 目前活跃度只能是一个大概范围
+     *
      * @param userName
      */
     public void incActivity(String userName) {
@@ -572,7 +573,7 @@ public class FService {
      * @param md
      * @return
      */
-    private static Integer switchType(String md) {
+    private static Integer switchType(String md, String cmd) {
         // 内容类型 0 红包 1 文字消息 2 图片消息 3 小冰 4 点歌 5 朗读 6 凌 7 弹幕
         if (RegularUtil.isMdImg(md)) {
             return 2;
@@ -586,9 +587,20 @@ public class FService {
         if (md.startsWith("朗诵") || md.startsWith("TTS") || md.startsWith("tts")) {
             return 5;
         }
-        if (md.startsWith("凌")) {
-            return 6;
+        if (StringUtils.isNotBlank(cmd)) {
+            // 切割命令
+            String[] split = cmd.split(",");
+            for (String s : split) {
+                if (md.startsWith(s)) {
+                    return 6;
+                }
+            }
+        } else {
+            if (md.startsWith("凌")) {
+                return 6;
+            }
         }
+
         if (md.equals("弹幕-20230426163907")) {
             return 7;
         }

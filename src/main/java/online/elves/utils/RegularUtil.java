@@ -10,21 +10,17 @@ import java.util.regex.Pattern;
  * 正则工具类
  */
 public class RegularUtil {
-    
+
     /**
-     * 两段式命令
+     * 用户自定义命令
      */
-    private static String ELVES_1 = "^凌\\s{1}[a-zA-Z0-9\\u4e00-\\u9fa5]*$";
-    
-    /**
-     * 三段式命令
-     */
-    private static String ELVES_2 = "^凌\\s{1}[a-zA-Z0-9\\u4e00-\\u9fa5]*\\s{1}\\S*$";
+    private static String USER_SET = "[a-zA-Z0-9\\u4e00-\\u9fa5]{1,3}";
+
     /**
      * md 语法图片
      */
     private static String MD_IMG = "\\S*?!\\[\\S*?\\]\\(\\S*?\\)";
-    
+
     /**
      * 手机号正则
      */
@@ -33,7 +29,7 @@ public class RegularUtil {
      * 数字串
      */
     private static String NUMBER = "^[0-9]\\d*$";
-    
+
     /**
      * 数字串 1-max
      */
@@ -99,39 +95,45 @@ public class RegularUtil {
      */
     private static final String REGEX_TIME = "((((0?[0-9])|([1][0-9])|([2][0-4]))\\:([0-5]?[0-9])" +
             "((\\s)|(\\:([0-5]?[0-9])))))?$";
+
     /**
      * 判断是否是数字
+     *
      * @param num 字符串
      * @return 是否是数字
      */
-    public static boolean isNum1Max(String num){
-        if (StringUtils.isBlank(num)){
+    public static boolean isNum1Max(String num) {
+        if (StringUtils.isBlank(num)) {
             return false;
         }
         return num.matches(NUMBER_1_MAX);
     }
+
     /**
      * 判断是否是数字
+     *
      * @param num 字符串
      * @return 是否是数字
      */
-    public static boolean isNum(String num){
-        if (StringUtils.isBlank(num)){
+    public static boolean isNum(String num) {
+        if (StringUtils.isBlank(num)) {
             return false;
         }
         return num.matches(REGEX_REAL_NUMBER);
     }
+
     /**
      * 判断是否是都是数字
+     *
      * @param num 字符串列表
      * @return 是否是数字
      */
-    public static boolean isNum(List<String> num){
-        if (CollUtil.isEmpty(num)){
+    public static boolean isNum(List<String> num) {
+        if (CollUtil.isEmpty(num)) {
             return false;
         }
-        for (String str: num){
-            if (!isNum(str)){
+        for (String str : num) {
+            if (!isNum(str)) {
                 return false;
             }
         }
@@ -140,26 +142,29 @@ public class RegularUtil {
 
     /**
      * 是否是日期类型
+     *
      * @param date 字符串
      * @return 是否是日期
      */
-    public static boolean isDate(String date){
-        if (StringUtils.isBlank(date)){
+    public static boolean isDate(String date) {
+        if (StringUtils.isBlank(date)) {
             return false;
         }
         return date.matches(REGEX_DATE_TIME);
     }
+
     /**
      * 判断是否是都是日期
+     *
      * @param date 字符串列表
      * @return 是否是日期
      */
-    public static boolean isDate(List<String> date){
-        if (CollUtil.isEmpty(date)){
+    public static boolean isDate(List<String> date) {
+        if (CollUtil.isEmpty(date)) {
             return false;
         }
-        for (String str: date){
-            if (!isDate(str)){
+        for (String str : date) {
+            if (!isDate(str)) {
                 return false;
             }
         }
@@ -191,9 +196,10 @@ public class RegularUtil {
         }
         return Pattern.compile(NUMBER).matcher(number).matches();
     }
-    
+
     /**
      * 判断是不是md 语法的图片
+     *
      * @param msg
      * @return
      */
@@ -203,10 +209,23 @@ public class RegularUtil {
         }
         return Pattern.compile(MD_IMG).matcher(msg).matches();
     }
-    
+
+    /**
+     * 判断是不是md 语法的图片
+     *
+     * @param cmd
+     * @return
+     */
+    public static boolean isOrderCase(String cmd) {
+        if (StringUtils.isBlank(cmd)) {
+            return false;
+        }
+        return Pattern.compile(USER_SET).matcher(cmd).matches();
+    }
+
     public static void main(String[] args) {
         for (int i = 0; i < 32; i++) {
-            System.out.println((i+1)*(i+1)*128);
+            System.out.println((i + 1) * (i + 1) * 128);
         }
     }
 }
