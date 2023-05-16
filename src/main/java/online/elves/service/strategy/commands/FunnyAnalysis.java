@@ -94,14 +94,12 @@ public class FunnyAnalysis extends CommandAnalysis {
                         LocalDateTime now = LocalDateTime.now();
                         // 第二天0点过期
                         RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
-                        // 小冰用户亲密度
-                        int userIntimacy = IceNet.getUserIntimacy(userName);
                         // 奖品等级
                         int lv = LotteryUtil.getLv(odds);
                         // 小冰助力
                         boolean ice = false;
                         // 小冰亲密度大于1000 则打劫小冰会出手
-                        if (userIntimacy > 1000) {
+                        if (IceNet.getUserIntimacy(userName) > 1000) {
                             lv = LotteryUtil.getLv(odds_ice);
                             ice = true;
                         }

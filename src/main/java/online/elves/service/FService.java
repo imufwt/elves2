@@ -729,6 +729,10 @@ public class FService {
         LocalDateTime now = LocalDateTime.now();
         // 用户打开记录
         Map<Integer, RpOpenLog> userRpOpen = rpOpenLogs.stream().collect(Collectors.toMap(RpOpenLog::getUserNo, Function.identity()));
+        // 校验一下 who
+        if (Objects.isNull(who) || who.isEmpty()){
+            return;
+        }
         // 遍历
         for (Object o : who) {
             // 积分明细

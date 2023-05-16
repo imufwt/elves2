@@ -79,13 +79,13 @@ public class CurrencyAnalysis extends CommandAnalysis {
                     // 加锁  增加 CD
                     if (StringUtils.isBlank(RedisUtil.get("CURRENCY_FIGHT_LIMIT"))) {
                         // 发送设置
-                        Fish.sendMsg("亲爱的 @" + userName + " . 准备好了么? 决斗红包来喽(不能指定, 先到先得) `决斗全局锁, 下次召唤请...30...秒后(一分钟能发俩. 咱们都冷静下)` ~");
+                        Fish.sendMsg("亲爱的 @" + userName + " . 准备好了么? 决斗红包来喽(不能指定, 先到先得) `决斗全局锁, 下次召唤请...10...秒后(一分钟能发十个. 咱们都冷静下)` ~");
                         // 发送猜拳红包
                         Fish.sendRockPaperScissors(Objects.equals(commandKey, "决斗") ? userName : null, 32);
                         // 设置次数减一
                         CurrencyService.sendCurrency(userName, -1, "聊天室活动-猜拳决斗");
                         // 加锁 一分钟一个
-                        RedisUtil.set("CURRENCY_FIGHT_LIMIT", "limit", 31);
+                        RedisUtil.set("CURRENCY_FIGHT_LIMIT", "limit", 10);
                     } else {
                         // 啥也不做
                         Fish.sendMsg("亲爱的 @" + userName + " . 美酒虽好, 可也不要贪杯哦~");

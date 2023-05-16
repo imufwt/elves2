@@ -5,15 +5,18 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.enums.CrLevel;
-import online.elves.service.FService;
 import online.elves.service.CurrencyService;
+import online.elves.service.FService;
 import online.elves.service.strategy.CommandAnalysis;
+import online.elves.third.apis.IceNet;
 import online.elves.third.fish.Fish;
 import online.elves.utils.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -123,6 +126,36 @@ public class AdminAnalysis extends CommandAnalysis {
             }
         } else {
             switch (commandKey) {
+                case "天降鱼丸":
+                    // 财阀标记
+                    String cfCount = RedisUtil.get(Const.CURRENCY_TIMES_PREFIX + userName);
+                    if (StringUtils.isNotBlank(cfCount)) {
+                        // 幸运编码
+                        String lKey = "luck:try:free:" + userName;
+                        // 是财阀. 每天第一次打劫 概率获得sth.
+                        if (StringUtils.isBlank(RedisUtil.get(lKey))) {
+                            // 当前时间
+                            LocalDateTime now = LocalDateTime.now();
+                            // 第二天0点过期
+                            RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
+                            // 小冰亲密度大于2048 每天可以召唤一次鱼丸
+                            if (IceNet.getUserIntimacy(userName) > 2048) {
+                                if (StringUtils.isBlank(RedisUtil.get(Const.CURRENCY_FREE_TIME))) {
+                                    RedisUtil.set(Const.CURRENCY_FREE_TIME, "聊天室活动-天降鱼丸-OpUser:" + userName, 60);
+                                    Fish.sendMsg("天降鱼丸, [0,10] 随机个数. 限时 1 min. 冲鸭~");
+                                } else {
+                                    Fish.sendMsg("天降鱼丸开启中. 冲鸭~");
+                                }
+                            } else {
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " : \n\n 嘻嘻, 渔民大人~ 和小冰的亲密度要大于`2048`哦, 加油呀! ");
+                            }
+                        } else {
+                            Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " : \n\n 嘻嘻, 渔民大人~ 你今天召唤过咯! ");
+                        }
+                    } else {
+                        Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " : \n\n 先成为渔民吧🙄不然你捞啥 ");
+                    }
+                    break;
                 case "补偿":
                     Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " : 我就知道(p≧w≦q) 你要给自己加片段对不对...  ");
                     break;

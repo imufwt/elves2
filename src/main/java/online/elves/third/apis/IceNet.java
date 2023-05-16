@@ -26,7 +26,7 @@ public class IceNet {
     /**
      * 获取指定用的小冰亲密度
      */
-    public static int getUserIntimacy(String uName) {
+    public static Long getUserIntimacy(String uName) {
         // 组装对象
         HttpRequest request = HttpUtil.createGet(RedisUtil.get("ICE:GAME:URI:INTIMACY") + "?user=" + uName);
         request.header("client_id", RedisUtil.get(Const.ICE_KEY));
@@ -41,11 +41,11 @@ public class IceNet {
                 return iResp.data.intimacy;
             }
             log.info("查询用户小冰亲密度失败...{}", response.body());
-            return 0;
+            return 0L;
         }
         log.info("调用小冰亲密度失败...{}", JSON.toJSONString(response));
         // 不OK了就返回0
-        return 0;
+        return 0L;
     }
 
     /**
@@ -55,7 +55,7 @@ public class IceNet {
     public static class Intimacy {
         private String user;
         private String uId;
-        private int intimacy;
+        private Long intimacy;
     }
 
     /**
