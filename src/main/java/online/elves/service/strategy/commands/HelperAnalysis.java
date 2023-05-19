@@ -32,9 +32,11 @@ public class HelperAnalysis extends CommandAnalysis {
     @Override
     public void process(String commandKey, String commandDesc, String userName) {
         // 自定义命令
-        String cmdSet = RedisUtil.get(Const.CMD_USER_SET + userName).replaceAll(",", " 或 ");
-        if (StringUtils.isBlank(cmdSet)){
+        String cmdSet = RedisUtil.get(Const.CMD_USER_SET + userName);
+        if (StringUtils.isBlank(cmdSet)) {
             cmdSet = "凌";
+        } else {
+            cmdSet = cmdSet.replaceAll(",", " 或 ");
         }
         Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " : 你好呀~\n" +
                 "<details>" +

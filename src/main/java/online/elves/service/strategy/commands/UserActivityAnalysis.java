@@ -33,6 +33,10 @@ public class UserActivityAnalysis extends CommandAnalysis {
 
     @Override
     public void process(String commandKey, String commandDesc, String userName) {
+        // 允许小冰查询别人
+        if (userName.equals("xiaoIce") && StringUtils.isNotBlank(commandDesc)) {
+            userName = commandDesc;
+        }
         // 当前活跃度
         String uAct = RedisUtil.get(Const.USER_ACTIVITY + userName);
         // 时间间隔
