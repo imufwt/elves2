@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.Builder;
 import lombok.Data;
@@ -730,7 +731,7 @@ public class FService {
         // 用户打开记录
         Map<Integer, RpOpenLog> userRpOpen = rpOpenLogs.stream().collect(Collectors.toMap(RpOpenLog::getUserNo, Function.identity()));
         // 校验一下 who
-        if (Objects.isNull(who) || who.isEmpty()){
+        if (Objects.isNull(who) || who.isEmpty()) {
             return;
         }
         // 遍历
@@ -769,6 +770,87 @@ public class FService {
                 }
             }
         }
+    }
+
+    /**
+     * 查询用户昨天记录
+     *
+     * @param user
+     * @return
+     */
+    public JSONObject getUserCredit(String user) {
+        // 需要返回的对象
+        JSONObject res = new JSONObject();
+        // 用户编码
+        Integer userNo_ = Fish.getUserNo(user);
+        // 当前日期
+        LocalDate now = LocalDate.now();
+        // 昨天
+        LocalDate yesterday = now.minusDays(1);
+        // 需要查询的对象日期格式
+        String yyyyMMdd = DateUtil.format(DateUtil.ld2UDate(yesterday), "yyyyMMdd");
+        /* * * * * * * 昨日水分 * * * * * * * * */
+        // 缓存key
+        String key_ = StrUtils.getKey(Const.RANKING_DAY_PREFIX, "20", yyyyMMdd);
+        // 获取得分
+        Double score_ = RedisUtil.getScore(key_, String.valueOf(userNo_));
+        // 不存在就赋值 0
+        if (Objects.isNull(score_)) {
+            score_ = Double.valueOf("0");
+        }
+        // 水分
+        res.put("moisture", score_);
+        /* * * * * * * 昨日红包数量 * * * * * * * * */
+        QueryWrapper<RpRecord> rpCond = new QueryWrapper<>();
+        rpCond.eq("user_no", userNo_);
+        rpCond.between("create_time", DateUtil.formatDay(yesterday.atStartOfDay()), DateUtil.formatDay(now.atStartOfDay()));
+        List<RpRecord> rpRecords = rpRecordMapper.selectList(rpCond);
+        if (CollUtil.isEmpty(rpRecords)) {
+            // 发红包
+            res.put("send", 0);
+            // 赌狗红包
+            res.put("dogSend", 0);
+            // 发送金额
+            res.put("sendMoney", 0);
+            // 赌狗红包金额
+            res.put("dogSendMoney", 0);
+        } else {
+            Map<Boolean, List<RpRecord>> listMap = rpRecords.stream().collect(groupingBy(x -> x.getRpType() == 5));
+            // 正常红包
+            List<RpRecord> falseList = listMap.getOrDefault(false, Lists.newArrayList());
+            // 赌狗红包
+            List<RpRecord> trueList = listMap.getOrDefault(true, Lists.newArrayList());
+            // 发红包
+            res.put("send", falseList.size());
+            // 赌狗红包
+            res.put("dogSend", trueList.size());
+            // 发送金额
+            res.put("sendMoney", falseList.stream().mapToInt(RpRecord::getMoney).sum());
+            // 赌狗红包金额
+            res.put("dogSendMoney", trueList.stream().mapToInt(RpRecord::getMoney).sum());
+        }
+        /* * * * * * * 昨日开红包记录 * * * * * * * * */
+        List<RpOpenLog> dogs = rpOpenLogMapper.selectDog(userNo_, DateUtil.formatDay(yesterday.atStartOfDay()), DateUtil.formatDay(now.atStartOfDay()));
+        if (CollUtil.isEmpty(dogs)) {
+            // 赌狗红包
+            res.put("dogOpen", 0);
+            res.put("dogOpenMoney", 0);
+        }else {
+            // 赌狗红包
+            res.put("dogOpen", dogs.size());
+            res.put("dogOpenMoney", dogs.stream().mapToInt(RpOpenLog::getMoney).sum());
+        }
+        List<RpOpenLog> noDogs = rpOpenLogMapper.selectNotDog(userNo_, DateUtil.formatDay(yesterday.atStartOfDay()), DateUtil.formatDay(now.atStartOfDay()));
+        if (CollUtil.isEmpty(noDogs)) {
+            // 赌狗红包
+            res.put("open", 0);
+            res.put("openMoney", 0);
+        }else {
+            // 赌狗红包
+            res.put("open", noDogs.size());
+            res.put("openMoney", noDogs.stream().mapToInt(RpOpenLog::getMoney).sum());
+        }
+        return res;
     }
 
     /**

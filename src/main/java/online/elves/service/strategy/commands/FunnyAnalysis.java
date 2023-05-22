@@ -24,6 +24,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +42,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "15", "欧皇们", "非酋们", "探路者", "触发词");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "15", "欧皇们", "非酋们", "探路者", "触发词", "520");
 
     /**
      * 打劫概率
@@ -51,6 +52,10 @@ public class FunnyAnalysis extends CommandAnalysis {
      * 小冰出手了
      */
     private static TreeMap<Integer, Double> odds_ice = new TreeMap<>();
+    /**
+     * 520 临时抽奖
+     */
+    private static TreeMap<Integer, Double> odds_520 = new TreeMap<>();
 
     // 初始化概率
     static {
@@ -71,6 +76,20 @@ public class FunnyAnalysis extends CommandAnalysis {
         odds_ice.put(1, 0.40);
         // 0-10 个鱼丸
         odds_ice.put(2, 0.40);
+
+
+        // 1314积分
+        odds_520.put(0, 0.001);
+        // 520 积分
+        odds_520.put(1, 0.044);
+        // 52 积分
+        odds_520.put(2, 0.055);
+        // 5 鱼翅
+        odds_520.put(3, 0.200);
+        // 2 鱼丸
+        odds_520.put(4, 0.300);
+        // 0 谢谢参与
+        odds_520.put(5, 0.400);
     }
 
     @Override
@@ -82,6 +101,58 @@ public class FunnyAnalysis extends CommandAnalysis {
     public void process(String commandKey, String commandDesc, String userName) {
         // 娱乐命令
         switch (commandKey) {
+            case "299792548520":
+                LocalDateTime now520 = LocalDateTime.now();
+                if (now520.isAfter(LocalDateTime.of(now520.toLocalDate(), LocalTime.of(18, 0, 0)))) {
+                    Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + "  520活动已经结束啦~ 期待下次活动与你相遇...嘻嘻");
+                } else {
+                    // 过期时间 到明天0点
+                    int exp = Long.valueOf(Duration.between(now520, now520.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue();
+                    // 幸运标识
+                    String luck520 = RedisUtil.get("LUCK:520:" + userName);
+                    // 初始化
+                    if (StringUtils.isBlank(luck520)) {
+                        luck520 = "0";
+                    }
+                    // 每人限制三次
+                    if (Integer.parseInt(luck520) < 3) {
+                        // 数字化
+                        int anInt = Integer.parseInt(luck520);
+                        // 回写
+                        RedisUtil.reSet("LUCK:520:" + userName, String.valueOf(anInt + 1), exp);
+                        // 抽奖
+                        switch (LotteryUtil.getLv(odds_520)){
+                            case 0:
+                                Fish.sendMsg("# 💐💐恭喜恭喜💐💐 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 获得`特等奖` [**1314**] 积分~");
+                                Fish.sendSpecify(userName, 1314, userName + ", 520活动 特等奖!");
+                                break;
+                            case 1:
+                                Fish.sendMsg("## 💐恭喜💐 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 获得`一等奖` [**520**] 积分~");
+                                Fish.sendSpecify(userName, 520, userName + ", 520活动 一等奖!");
+                                break;
+                            case 2:
+                                Fish.sendMsg("### 💐恭喜💐 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 获得`二等奖` [**52**] 积分~");
+                                Fish.sendSpecify(userName, 52, userName + ", 520活动 二等奖!");
+                                break;
+                            case 3:
+                                Fish.sendMsg("#### 💐恭喜💐 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 获得`三等奖` [**5**] 鱼翅~");
+                                CurrencyService.sendCurrency(userName, 5, "聊天室活动-520节日抽奖-三等奖");
+                                break;
+                            case 4:
+                                Fish.sendMsg("#### 💐恭喜💐 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 获得`四等奖` [**2**] 鱼丸~");
+                                CurrencyService.sendCurrencyFree(userName, 2, "聊天室活动-520节日抽奖-四等奖");
+                                break;
+                            case 5:
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " 谢谢参与, 祝你明天开心快乐~");
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        Fish.send2User(userName, "亲, 每人只有三次抽奖机会, 你已经用完啦~期待下次活动与你相遇, 嘿嘿");
+                    }
+                }
+                break;
             case "去打劫":
                 // 财阀标记
                 String cfCount = RedisUtil.get(Const.CURRENCY_TIMES_PREFIX + userName);

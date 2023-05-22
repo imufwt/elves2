@@ -33,6 +33,10 @@ public class Const {
      * 用户自定义触发词限定
      */
     public static final String CMD_USER_SET = "CMD:USER:SET:";
+    /**
+     * 外置API授权秘钥
+     */
+    public static final String TP_API_PREFIX = "TP:API:SECRET:";
 
     /* ..................账号密码系列.............开始了............... */
     /**
