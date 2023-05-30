@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,18 +44,16 @@ public class UserActivityAnalysis extends CommandAnalysis {
         String uAct = RedisUtil.get(Const.USER_ACTIVITY + userName);
         // 时间间隔
         String limit = RedisUtil.get("CALL:FISH:LIMIT:" + userName);
-        if (StringUtils.isBlank(limit)) {
-            assert uAct != null;
-            if (!uAct.equals("100")) {
-                // 用户当前活跃度
-                String userLiveness = Fish.getUserLiveness(userName);
-                if (StringUtils.isNotBlank(userLiveness)) {
-                    // 不为空才处理
-                    uAct = userLiveness;
-                    RedisUtil.set("CALL:FISH:LIMIT:" + userName, uAct, 30);
-                }
-            }
+        if (StringUtils.isBlank(uAct) || StringUtils.isBlank(limit)) {
+            LocalDateTime now = LocalDateTime.now();
+            // key 时间差
+            Integer diff = Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue();
+            // 用户当前活跃度
+            uAct = Fish.getUserLiveness(userName);
+            // 设置活跃对象
+            RedisUtil.reSet(Const.USER_ACTIVITY + userName, uAct, diff);
         }
+
         if (StringUtils.isBlank(uAct)) {
             Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . \n\n> 你当前活跃度可能为 `0.6%` ~ 保持 `60` 秒一次发言, 预计 `166.5` 分钟后满活跃~");
         } else {

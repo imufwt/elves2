@@ -1,6 +1,8 @@
 package online.elves.message.listener;
 
+import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.message.event.CrEvent;
@@ -14,6 +16,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -49,17 +52,46 @@ public class CrListener {
                     log.info("人工智障说: {}", md);
                     if (md.contains("用户会话详情")) {
                         List<String> x = Arrays.asList(md.split("<summary>用户会话详情</summary>")[1].split("<br></details>")[0].split("<br>"));
+                        // 需要断开的用户
+                        List<String> needUser = Lists.newArrayList();
                         for (String z : x) {
                             String[] split = z.split(" ");
                             String currUser = split[0];
                             log.info("用户[{}]当前连接数[{}]", currUser, split[1]);
                             // 当前连接数大于等于3
                             if (Integer.parseInt(split[1]) > Integer.parseInt(Objects.requireNonNull(RedisUtil.get("CMD:DEVICE:LIMIT")))) {
-                                if (!Objects.requireNonNull(RedisUtil.get(Const.OP_LIST)).contains(currUser)) {
-                                    Fish.sendCMD("[⚠️设备数过载预警⚠️] 亲爱的 @" + currUser + " 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条为自动发送, 请勿回复! ❤️");
+                                // 加入信息
+                                needUser.add(currUser);
+                                // 两位数加减法
+                                int a = new SecureRandom().nextInt(10), b = new SecureRandom().nextInt(10);
+                                // 符号
+                                boolean symbol = a >= b;
+                                // 结果
+                                int res;
+                                if (symbol) {
+                                    res = a - b;
+                                } else {
+                                    res = a + b;
                                 }
-                                Fish.send2User(currUser, "[⚠️设备数过载预警⚠️] 亲爱的用户, 你当前连接数是[" + split[1] + "], 请主动说明情况! 否则有被断开风险!\n\n> Tips: 本条私信为自动发送, 请勿回复! ❤️");
+                                // 写入redis
+                                RedisUtil.set("ONLINE:JUDGE:" + currUser, String.valueOf(res), 30);
+                                // 需要发送的信息
+                                StringBuilder str = new StringBuilder("## ⚠️设备数过载预警⚠️").append("\n\n");
+                                str.append("> ### `").append(switchNum(a)).append(" ").append(symbol ? "-" : "+").append(" ").append(switchNum(b)).append(" = ?` ❤️").append("\n\n");
+                                str.append("---- ").append("\n\n");
+                                str.append(" 亲爱的 @").append(currUser).append(" 你当前连接数是[ **").append(split[1]).append("** ] ").append("\n\n");
+                                str.append("📢 请在`30s`内在>[聊天室](https://fishpi.cn/cr)<直接回复上述问题答案, 否则将被 **断开会话**! ").append("\n\n");
+                                // 发送结果
+                                if (!Objects.requireNonNull(RedisUtil.get(Const.OP_LIST)).contains(currUser)) {
+                                    // 发送命令
+                                    Fish.sendCMD(str.toString());
+                                }
+                                Fish.send2User(currUser, str.toString());
                             }
+                        }
+                        // 不为空才写回去
+                        if (CollUtil.isNotEmpty(needUser)) {
+                            RedisUtil.set("ONLINE:JUDGE", JSON.toJSONString(needUser), 60);
                         }
                     }
                     break;
@@ -88,6 +120,22 @@ public class CrListener {
                     fService.recMsg(userName, oId, md, content, false);
                 } else {
                     log.info("接收到聊天室消息...{}({}) 说: {}", userNickname, userName, md);
+                    // online 判定
+                    String judge = RedisUtil.get("ONLINE:JUDGE:" + userName);
+                    // 判定通过
+                    String judgePass = RedisUtil.get("ONLINE:JUDGE:PASS:" + userName);
+                    // 存在 且尚未回答正确.
+                    if (StringUtils.isNotBlank(judge) && StringUtils.isBlank(judgePass)) {
+                        if (md.contains(judge)) {
+                            Fish.sendMsg("@" + userName + " 验证成功，请注意检查连接情况~\n\n> 最好不要开启太多会话哦~(请尽量小于等于`" + Objects.requireNonNull(RedisUtil.get("CMD:DEVICE:LIMIT")) + "`个)");
+                            //  回答正确延长60
+                            RedisUtil.set("ONLINE:JUDGE:" + userName, judge, 60);
+                            // 通过了
+                            RedisUtil.set("ONLINE:JUDGE:PASS:" + userName, judge, 60);
+                        } else {
+                            Fish.sendMsg("@" + userName + " 很遗憾, 回答错误.抓紧时间哦~");
+                        }
+                    }
                     // 记录消息
                     fService.recMsg(userName, oId, md, content, true);
                 }
@@ -125,4 +173,19 @@ public class CrListener {
         }
     }
 
+    private static String switchNum(int x) {
+        switch (new SecureRandom().nextInt(3)) {
+            case 0:
+                return ten[x];
+            case 1:
+                return ten_1[x];
+            case 2:
+            default:
+                return ten_2[x];
+        }
+    }
+
+    private static String[] ten = new String[]{"零", "一", "二", "三", "四", "五", "六", "七", "八", "九"};
+    private static String[] ten_1 = new String[]{"〇", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"};
+    private static String[] ten_2 = new String[]{"0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"};
 }

@@ -49,6 +49,36 @@ public class IceNet {
     }
 
     /**
+     * 给小冰送礼
+     *
+     * @param count
+     * @param userName
+     * @param oId
+     * @param gift
+     */
+    public static void bribe(int count, String userName, Long oId, String gift) {
+        // 组装对象
+        HttpRequest request = HttpUtil.createPost(RedisUtil.get("ICE:GAME:URI:BRIBE"));
+        request.header("client_id", RedisUtil.get(Const.ICE_KEY));
+        request.header("client_secret", RedisUtil.get(Const.ICE_SECRET));
+        // 参数
+        JSONObject param = new JSONObject();
+        param.put("uId", oId);
+        param.put("item", gift);
+        param.put("num", count);
+        param.put("user", userName);
+        // 设置请求参数
+        request.body(param.toJSONString());
+        // 获取响应
+        HttpResponse response = request.execute();
+        if (response.isOk()) {
+            log.info("小冰送礼成功...{}", response.body());
+            return;
+        }
+        log.info("小冰送礼失败...{}", response.body());
+    }
+
+    /**
      * 小冰用户亲密度
      */
     @Data

@@ -227,12 +227,8 @@ public class FService {
             // 保存记录
             msgRecordMapper.insert(record);
             // 发送消息记录
-            publisher.send(new CrMsgEvent(userName, user_no));
-            // 文字消息再计算能活跃 弹幕不算
-            if (isMsg) {
-                // 计算用户活跃度
-                incActivity(userName);
-            }
+            publisher.send(new CrMsgEvent(userName, user_no, md, oId));
+            // 活跃度直接查询
         } catch (Exception e) {
             e.printStackTrace();
             log.info("没了就没了吧...{}", e.getMessage());
@@ -368,8 +364,9 @@ public class FService {
             // 保存记录
             rpOpenLogMapper.insert(openLog);
         } catch (Exception e) {
-            log.error("这可不能没了...", e);
-            Fish.sendMsg("@" + RedisUtil.get(Const.ADMIN) + " . 老板, 红包打开记录入库失败啦. 快来救命呀~");
+            e.printStackTrace();
+            log.error("这可不能没了...{}", e.getMessage());
+            Fish.send2User(RedisUtil.get(Const.ADMIN), " 老板, 红包打开记录入库失败啦. 快来救命呀~ OID:" + oId);
         }
     }
 
@@ -451,65 +448,6 @@ public class FService {
         Currency currency = Currency.builder().oid(oId).user(userName).money(money).rate(rate).happy(happy).build();
         // 写入缓存
         RedisUtil.set(oId.toString(), JSON.toJSONString(currency));
-    }
-
-    /**
-     * 计算用户活跃度 每次间隔60秒发言, 活跃度增加 0.6
-     * 无法感知其余操作, 目前活跃度只能是一个大概范围
-     *
-     * @param userName
-     */
-    public void incActivity(String userName) {
-        // 当前日期
-        LocalDate now = LocalDate.now();
-        // 计算宵禁
-        LocalDateTime time = LocalDateTime.now();
-        if (!DateUtil.isBetween(time, LocalDateTime.of(now, Const.start), LocalDateTime.of(now, Const.end))) {
-            // 宵禁时间 不计算
-            return;
-        }
-        // 时间间隔
-        String cdKey = Const.USER_ACTIVITY_LIMIT + userName;
-        // 当前活跃度
-        String userActivity = Const.USER_ACTIVITY + userName;
-        // 查询能否获得间隔锁  可以获得就计算, 否则啥也不干
-        if (StringUtils.isBlank(RedisUtil.get(cdKey))) {
-            // key 时间差
-            Integer diff = Long.valueOf(Duration.between(time, now.plusDays(1).atStartOfDay()).getSeconds()).intValue();
-            // 当前活跃
-            String cs = RedisUtil.get(userActivity);
-            // 当前消耗一次. 下次继续 如果有 key. 就叠加
-            if (StringUtils.isBlank(cs)) {
-                RedisUtil.set(userActivity, "0.6", diff.longValue());
-            } else {
-                // 否则增加 1.67
-                BigDecimal add = new BigDecimal(cs).add(new BigDecimal("0.6"));
-                if (add.longValue() > 100) {
-                    add = new BigDecimal("100");
-                }
-                RedisUtil.set(userActivity, add.toString(), diff);
-            }
-            // 30秒 cd
-            RedisUtil.set(cdKey, "1", 60);
-        }
-    }
-
-    private static void incLiveness(LocalDate now, LocalDateTime time, String userActivity) {
-        // key 时间差
-        Integer diff = Long.valueOf(Duration.between(time, now.plusDays(1).atStartOfDay()).getSeconds()).intValue();
-        // 当前活跃
-        String cs = RedisUtil.get(userActivity);
-        // 当前消耗一次. 下次继续 如果有 key. 就叠加
-        if (StringUtils.isBlank(cs)) {
-            RedisUtil.set(userActivity, "2", diff.longValue());
-        } else {
-            // 否则增加 2
-            BigDecimal add = new BigDecimal(cs).add(new BigDecimal("2"));
-            if (add.longValue() > 100) {
-                add = new BigDecimal("100");
-            }
-            RedisUtil.set(userActivity, add.toString(), diff);
-        }
     }
 
     /**
@@ -719,6 +657,12 @@ public class FService {
         try {
             // 获取打开信息
             JSONObject rp = JSON.parseObject(fResp);
+            // 获取相应编码
+            Integer code = rp.getInteger("code");
+            if (Objects.nonNull(code) && code == -1) {
+                log.info("打开红包失败...{}", oid);
+                return;
+            }
             // 获取列表
             who = rp.getJSONArray("who");
         } catch (Exception e) {
@@ -835,7 +779,7 @@ public class FService {
             // 赌狗红包
             res.put("dogOpen", 0);
             res.put("dogOpenMoney", 0);
-        }else {
+        } else {
             // 赌狗红包
             res.put("dogOpen", dogs.size());
             res.put("dogOpenMoney", dogs.stream().mapToInt(RpOpenLog::getMoney).sum());
@@ -845,12 +789,26 @@ public class FService {
             // 赌狗红包
             res.put("open", 0);
             res.put("openMoney", 0);
-        }else {
+        } else {
             // 赌狗红包
             res.put("open", noDogs.size());
             res.put("openMoney", noDogs.stream().mapToInt(RpOpenLog::getMoney).sum());
         }
         return res;
+    }
+
+    /**
+     * 获取最近 count 条记录
+     *
+     * @param count
+     * @return
+     */
+    public List<MsgRecord> getMsgRecordDescLimit(int count) {
+        // 查询条件
+        QueryWrapper<MsgRecord> cond = new QueryWrapper<>();
+        cond.orderByDesc("create_time");
+        cond.last(" limit " + count);
+        return msgRecordMapper.selectList(cond);
     }
 
     /**

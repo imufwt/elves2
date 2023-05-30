@@ -20,7 +20,7 @@ public class Const {
     /**
      * 机器人列表  小智 小冰 精灵
      */
-    public static List<Integer> ROBOT_LIST = Arrays.asList(4076, 8888, 521);
+    public static List<Integer> ROBOT_LIST = Arrays.asList(4076, 8888, 521, 8887);
     /**
      * 大佬列表
      */
@@ -37,6 +37,18 @@ public class Const {
      * 外置API授权秘钥
      */
     public static final String TP_API_PREFIX = "TP:API:SECRET:";
+    /**
+     * 敏感词
+     */
+    public static final String SENSITIVE_WORDS = "SENSITIVE:WORDS";
+    /**
+     * 敏感度  限制次数
+     */
+    public static final String SENSITIVE_WORDS_LIMIT = "SENSITIVE:WORDS:LIMIT";
+    /**
+     * 敏感词计数器
+     */
+    public static final String SENSITIVE_WORDS_PREFIX = "SENSITIVE:WORDS:";
 
     /* ..................账号密码系列.............开始了............... */
     /**

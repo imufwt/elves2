@@ -7,6 +7,7 @@ import online.elves.mapper.entity.User;
 import online.elves.service.CurrencyService;
 import online.elves.service.FService;
 import online.elves.service.strategy.CommandAnalysis;
+import online.elves.third.apis.IceNet;
 import online.elves.third.fish.Fish;
 import online.elves.utils.RedisUtil;
 import online.elves.utils.RegularUtil;
@@ -219,7 +220,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                         CurrencyService.sendCurrency(userName, -count, "赠送`鱼翅`给 " + user.getUserNick() + "(" + target + ")");
                         // 增加
                         if (target.equals("xiaoIce")) {
-                            CurrencyService.sendCurrency(target, count, userName + "|" + Objects.requireNonNull(Fish.getUser(userName)).getOId() + " 赠送`鱼翅`给你");
+                            IceNet.bribe(count, userName, Objects.requireNonNull(Fish.getUser(userName)).getOId(), "鱼翅");
                         } else {
                             CurrencyService.sendCurrency(target, count, fService.getUser(userName).getUserNick() + "(" + userName + ")" + " 赠送`鱼翅`给你");
                         }
@@ -279,7 +280,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                             CurrencyService.sendCurrencyFree(userName, -count, "赠送`鱼丸`给 " + target);
                             // 增加
                             if (target.equals("xiaoIce")) {
-                                CurrencyService.sendCurrencyFree(target, count, userName + "|" + Objects.requireNonNull(Fish.getUser(userName)).getOId() + " 赠送`鱼丸`给你");
+                                IceNet.bribe(count, userName, Objects.requireNonNull(Fish.getUser(userName)).getOId(), "鱼丸");
                             } else {
                                 CurrencyService.sendCurrencyFree(target, count, fService.getUser(userName).getUserNick() + "(" + userName + ")" + " 赠送`鱼丸`给你");
                             }

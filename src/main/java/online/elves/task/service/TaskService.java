@@ -2,14 +2,10 @@ package online.elves.task.service;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.mapper.entity.CurrencyLog;
-import online.elves.mapper.entity.RpOpenLog;
 import online.elves.mapper.entity.User;
 import online.elves.service.FService;
 import online.elves.third.fish.Fish;
@@ -108,10 +104,10 @@ public class TaskService {
                     "> Tips: 正式成员可以赞同帖子/点踩帖子/艾特用户/指定帖子等功能,详细介绍请移步 [【公告】摸鱼派会员等级规则 ](https://fishpi.cn/article/1630575841478)" + " \n" +
                     "----" + " \n\n" +
                     "#### 下面几个守则可以让你快速了解摸鱼派社区" + " \n\n" +
-                    "1. **摸鱼守则**： [【必修】摸鱼派：摸鱼守则（修订第九版）](https://fishpi.cn/article/1631779202219)" + " \n\n" +
-                    "2. **新人手册**： [『新人手册』摸鱼派是个什么样的社区](https://fishpi.cn/article/1630569106133)" + " \n\n" +
-                    "3. **积分规则**： [【公告】摸鱼派积分使用和消费规则](https://fishpi.cn/article/1630572449626)" + " \n\n" +
-                    "4. **活跃度**： [【公示】社区活跃度详细算法](https://fishpi.cn/article/1636946098474)" + " \n\n" +
+                    "1. **摸鱼守则**： https://fishpi.cn/article/1631779202219" + " \n\n" +
+                    "2. **新人手册**： https://fishpi.cn/article/1630569106133" + " \n\n" +
+                    "3. **积分规则**： https://fishpi.cn/article/1630572449626" + " \n\n" +
+                    "4. **活跃度**： https://fishpi.cn/article/1683775497629" + " \n\n" +
                     "----" + " \n\n " +
                     "> 当然, 我也有一些好玩的功能, 你可以去[聊天室](https://fishpi.cn/cr)使用指令 `凌 菜单` 或 `凌 帮助` 来查看一些指令, 祝你在摸鱼派摸的开心❤️" + " \n\n " +
                     "Tips: 本条私信为自动发送, 请勿回复! " + " \n\n ";
@@ -341,13 +337,13 @@ public class TaskService {
                 "\n" +
                 "#### 当然, 下面几个链接也可以让你快速融入到摸鱼派社区的\uD83D\uDC4D.\n" +
                 "\n" +
-                "1. \uD83C\uDF89 `摸鱼守则`： [【必修】摸鱼派：摸鱼守则（修订第九版）](https://fishpi.cn/article/1631779202219)\n" +
+                "1. \uD83C\uDF89 `摸鱼守则`： https://fishpi.cn/article/1631779202219\n" +
                 "\n" +
-                "2. \uD83C\uDF89 `新人手册`： [『新人手册』摸鱼派是个什么样的社区](https://fishpi.cn/article/1630569106133)\n" +
+                "2. \uD83C\uDF89 `新人手册`： https://fishpi.cn/article/1630569106133\n" +
                 "\n" +
-                "3. \uD83C\uDF89 `积分规则`： [【公告】摸鱼派积分使用和消费规则](https://fishpi.cn/article/1630572449626)\n" +
+                "3. \uD83C\uDF89 `积分规则`： https://fishpi.cn/article/1630572449626\n" +
                 "\n" +
-                "4. \uD83C\uDF89 `活跃度`： [【公示】社区活跃度详细算法](https://fishpi.cn/article/1636946098474)\n" +
+                "4. \uD83C\uDF89 `活跃度`： https://fishpi.cn/article/1683775497629\n" +
                 "\n" +
                 "----\n" +
                 "\n" +
@@ -401,5 +397,29 @@ public class TaskService {
         // 开始处理红包打开记录
         log.info("开始处理红包打开记录...");
         fService.dealRpOpenLog();
+    }
+
+    /**
+     * 在线检查
+     */
+    public void onlineCheck() {
+        // 在线列表
+        String online = RedisUtil.get("ONLINE:JUDGE");
+        if (StringUtils.isNotBlank(online)) {
+            // 所有需要校验的用户名
+            List<String> parsed = JSON.parseArray(online, String.class);
+            // 新建个对象
+            List<String> need = Lists.newCopyOnWriteArrayList(parsed);
+            for (String user : parsed) {
+                // 不存在对象, 就是没有回答问题呗
+                if (StringUtils.isBlank(RedisUtil.get("ONLINE:JUDGE:" + user))) {
+                    need.remove(user);
+                    Fish.sendCMD("执法 断开会话 " + user);
+                }
+            }
+            RedisUtil.reSet("ONLINE:JUDGE", JSON.toJSONString(need), 1);
+            return;
+        }
+        log.info("执法略过, 没有需要处理的玩家~");
     }
 }

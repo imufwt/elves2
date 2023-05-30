@@ -1,5 +1,7 @@
 package online.elves.message.listener;
 
+import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
 import online.elves.enums.CrLevel;
@@ -18,6 +20,7 @@ import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -26,10 +29,10 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class CrMsgListener {
-    
+
     @Resource
     FService fService;
-    
+
     @EventListener(classes = {CrMsgEvent.class})
     public void exec(CrMsgEvent event) {
         // 事件消息 发送人
@@ -42,10 +45,70 @@ public class CrMsgListener {
         } else {
             halo(userNo, userName);
         }
+        // 机器人和OP豁免
+        if (!Const.ROBOT_LIST.contains(userNo) && !Objects.requireNonNull(RedisUtil.get(Const.OP_LIST)).contains(userName)) {
+            // 敏感词判定
+            String sw = RedisUtil.get(Const.SENSITIVE_WORDS);
+            if (StringUtils.isNotBlank(sw)) {
+                // 有敏感词存在
+                List<String> sws = JSON.parseArray(sw, String.class);
+                if (CollUtil.isNotEmpty(sws)) {
+                    // 消息内容
+                    String md = event.getMd();
+                    // 循环敏感词
+                    for (String s : sws) {
+                        if (StringUtils.isNotBlank(s) && md.contains(s)) {
+                            // 有 敏感词... 处理掉 1 个就可以嘞.
+                            revokeJudge(userNo, userName, s, event.getOid());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
-    
+
+    /**
+     * 撤回判定
+     *
+     * @param userNo
+     * @param userName
+     * @param keyWord
+     * @param oid
+     */
+    private void revokeJudge(Integer userNo, String userName, String keyWord, Long oid) {
+        // 限定次数
+        Integer limit = Integer.valueOf(RedisUtil.get(Const.SENSITIVE_WORDS_LIMIT));
+        // 缓存对象
+        String key = Const.SENSITIVE_WORDS_PREFIX + userName;
+        // 计数器
+        String s = RedisUtil.get(key);
+        // 十五分钟计时器
+        Integer count = Integer.valueOf(StringUtils.isBlank(s) ? "0" : s);
+        // 撤回对象
+        Fish.revoke(oid);
+        // 敏感词预警
+        Fish.send2User(userName, "⚠️敏感词预警⚠️ \n\n 撤回消息包含敏感词[" + keyWord + "], 请规范言行!");
+        // 撤回+封禁
+        if (count > limit) {
+            // 处罚通告
+            Fish.sendMsg("🚨处罚通报🚨 \n\n 用户@" + userName + " 连续使用敏感词[`" + limit + "`次], 触发处罚. 禁言`15`分钟! 请注意言辞, 维护和谐聊天室环境!");
+            // 封禁
+            Fish.sendCMD("执法 禁言 " + userName + " 15");
+            // 删除判定
+            RedisUtil.del(key);
+        } else {
+            // 撤回+警告
+            // 处罚通告
+            Fish.sendMsg("⚠️敏感词处罚预警⚠️ \n\n 用户 @" + userName + " 请注意. 检测到您的消息内容包含敏感词, 消息已被撤回. 请注意言辞, 维护和谐聊天室环境! \n\n >  连续使用敏感词[`" + limit + "`次]后, 将触发禁言`15`分钟! 您当前剩余[`" + (limit - count) + "`次]");
+            // 计数器+1
+            RedisUtil.reSet(key, String.valueOf(count + 1), 15 * 60);
+        }
+    }
+
     /**
      * 迎新
+     *
      * @param userNo
      * @param userName
      */
@@ -67,10 +130,10 @@ public class CrMsgListener {
         content.append("> Tips: 正式成员可以赞同帖子/点踩帖子/艾特用户/指定帖子等功能,详细介绍请移步 [【公告】摸鱼派会员等级规则 ](https://fishpi.cn/article/1630575841478)").append(" \n");
         content.append("----").append(" \n\n");
         content.append("#### 下面几个守则也可以让你快速融入了解摸鱼派社区").append(" \n\n");
-        content.append("1. **摸鱼守则**： [【必修】摸鱼派：摸鱼守则（修订第九版）](https://fishpi.cn/article/1631779202219)").append(" \n\n");
-        content.append("2. **新人手册**： [『新人手册』摸鱼派是个什么样的社区](https://fishpi.cn/article/1630569106133)").append(" \n\n");
-        content.append("3. **积分规则**： [【公告】摸鱼派积分使用和消费规则](https://fishpi.cn/article/1630572449626)").append(" \n\n");
-        content.append("4. **活跃度**： [【公示】社区活跃度详细算法](https://fishpi.cn/article/1636946098474)").append(" \n\n");
+        content.append("1. **摸鱼守则**： https://fishpi.cn/article/1631779202219").append(" \n\n");
+        content.append("2. **新人手册**： https://fishpi.cn/article/1630569106133").append(" \n\n");
+        content.append("3. **积分规则**： https://fishpi.cn/article/1630572449626").append(" \n\n");
+        content.append("4. **活跃度**： https://fishpi.cn/article/1683775497629").append(" \n\n");
         content.append("----").append(" \n\n ");
         content.append("> 当然我也有一些好玩的功能, 你可以使用指令 `凌 菜单` 或 `凌 帮助` 来查看一些指令, 祝你在摸鱼派摸的开心❤️").append(" \n\n ");
         // 发送消息
@@ -78,9 +141,10 @@ public class CrMsgListener {
         // 欢迎之后 写入记录
         RedisUtil.incrScore(Const.CHAT_ROOM_WELCOME, userNo.toString(), Long.valueOf(LocalDate.now().toEpochDay()).intValue());
     }
-    
+
     /**
      * 打招呼
+     *
      * @param userNo
      * @param userName
      */
@@ -115,9 +179,10 @@ public class CrMsgListener {
             }
         }
     }
-    
+
     /**
      * 是否是聊天室新人
+     *
      * @param userNo
      * @return
      */
@@ -128,9 +193,10 @@ public class CrMsgListener {
         }
         return true;
     }
-    
+
     /**
      * 欢迎词
+     *
      * @param now
      * @return
      */
@@ -175,5 +241,5 @@ public class CrMsgListener {
         }
         return " 你好呀~ \n\n > " + Letter.getOneWord();
     }
-    
+
 }

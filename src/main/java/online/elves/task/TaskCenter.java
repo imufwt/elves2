@@ -43,6 +43,8 @@ public class TaskCenter {
     public void check15Sec() {
         // 开红包
         taskService.buyCurrency();
+        // 在线检查
+        taskService.onlineCheck();
     }
 
     /**
@@ -124,6 +126,8 @@ public class TaskCenter {
         } else {
             // 最后一次发言
             LocalDateTime last = DateUtil.parseLdt(s);
+            // 断言
+            assert last != null;
             // 三小时精灵没说话了, 说句话
             if (last.isBefore(LocalDateTime.now().minusHours(3))) {
                 switch (new Random().nextInt(3)) {

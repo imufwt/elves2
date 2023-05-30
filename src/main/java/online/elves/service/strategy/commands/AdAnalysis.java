@@ -21,21 +21,21 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class AdAnalysis extends CommandAnalysis {
-    
+
     /**
      * 关键字
      */
     private static final List<String> keys = Arrays.asList("广告", "取消广告");
-    
+
     @Override
     public boolean check(String commonKey) {
         return keys.contains(commonKey);
     }
-    
+
     @Override
     public void process(String commandKey, String commandDesc, String userName) {
         // 只有网管才会处理
-        if (Objects.equals(RedisUtil.get(Const.ADMIN), userName)) {
+        if (Objects.equals(RedisUtil.get(Const.ADMIN), userName) || RedisUtil.get(Const.OP_LIST).contains(userName)) {
             if (commandKey.startsWith("取消")) {
                 RedisUtil.del(Const.TEMPORARY_CONTENT);
                 Fish.sendMsg("已取消广告");
@@ -60,5 +60,5 @@ public class AdAnalysis extends CommandAnalysis {
             Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + " : \n\n 1024 积分一天. 公益类型广告免费. 详询我老板 👉🏻 @" + RedisUtil.get(Const.ADMIN) + " ...");
         }
     }
-    
+
 }

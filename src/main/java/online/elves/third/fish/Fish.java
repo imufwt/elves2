@@ -1,6 +1,10 @@
 package online.elves.third.fish;
 
 import cn.hutool.core.util.URLUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.http.Method;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
@@ -113,9 +117,12 @@ public class Fish {
         if (StringUtils.isNotBlank(spec)) {
             FUser user = JSON.parseObject(spec, FUser.class);
             Integer userNo = user.getUserNo();
-            // 放入内存缓存 不过期
-            Cache.getInstance().put(userName, userNo + "");
-            return userNo;
+            // 遇见改名的, 也没有办法
+            if (Objects.nonNull(userNo)) {
+                // 放入内存缓存 不过期
+                Cache.getInstance().put(userName, userNo + "");
+                return userNo;
+            }
         }
         return -1;
     }
@@ -466,5 +473,18 @@ public class Fish {
             return JSON.parseArray(JSON.toJSONString(respObj.getData()), FUser.class);
         }
         return Lists.newArrayList();
+    }
+
+    /**
+     * 撤回消息
+     *
+     * @param oid
+     */
+    public static void revoke(Long oid) {
+        JSONObject param = new JSONObject();
+        param.put("apiKey", getKey());
+        // 构建对象
+        HttpResponse execute = HttpUtil.createRequest(Method.DELETE, "https://fishpi.cn/chat-room/revoke/" + oid).header("User-Agent", FUtil.UA).body(param.toJSONString()).execute();
+        log.info("执行撤回. 响应...{}", execute.body());
     }
 }
