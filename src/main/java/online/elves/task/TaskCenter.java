@@ -1,9 +1,11 @@
 package online.elves.task;
 
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import online.elves.config.Const;
+import online.elves.service.CurrencyService;
 import online.elves.task.service.TaskService;
 import online.elves.third.fish.Fish;
 import online.elves.utils.DateUtil;
@@ -12,6 +14,7 @@ import online.elves.ws.WsClient;
 import online.elves.ws.handler.UserChat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +25,10 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -148,6 +154,55 @@ public class TaskCenter {
             }
         }
     }
+    /**
+     * 鱼鱼标记赛
+     */
+    @Scheduled(cron = "0 0 8 * * ?")
+    public void clock8() {
+        // 开始预告
+        Fish.sendMsg("# https://fishpi.cn/article/1685604556543 开始报名啦~ 渔民大人快冲呀!");
+    }
+    /**
+     * 鱼鱼标记赛
+     */
+    @Scheduled(cron = "30 0 12 * * ?")
+    public void biuFish() {
+        // 开始预告
+        Fish.sendMsg("`鱼鱼标记赛`开始统计!");
+        // 标记前缀
+        String prefix = "CR:GAME:BIU:";
+        // 标记对象
+        StringBuilder record = new StringBuilder("`鱼鱼标记赛`参与详情:").append("\n\n");
+        for (int i = 1; i < 17; i++) {
+            String tmp = "无";
+            // 标记人
+            String users = RedisUtil.get(prefix + i);
+            if (StringUtils.isNotBlank(users)) {
+                tmp = Strings.join(JSON.parseArray(users, String.class), ',');
+            }
+            record.append("标记[").append(i).append("]号鱼鱼玩家: ").append(tmp).append("\n\n");
+        }
+        // 发送消息
+        Fish.sendMsg(record.toString());
+        // 随机获取鱼鱼
+        Integer biu = Const.CHAT_ROOM_BIU_FISH.get(new SecureRandom().nextInt(Const.CHAT_ROOM_BIU_FISH.size()));
+        // 开始预告
+        Fish.sendMsg("biu~biu~biu~! 小精灵biu到了[`" + biu + "`]号鱼鱼~");
+        // 标记人
+        String biuUsers = RedisUtil.get(prefix + biu);
+        if (StringUtils.isNotBlank(biuUsers)) {
+            // 获胜玩家
+            List<String> uList = JSON.parseArray(biuUsers, String.class);
+            Fish.sendMsg("`鱼鱼标记赛` " + DateUtil.formatDay(LocalDate.now()) + " 赛结束, 让我们恭喜玩家[" + Strings.join(uList, ',') + "](奖品稍后发放, 请注意查收私信!)~ 渔民们明天见啦!");
+            // 循环发奖
+            for (String u : uList) {
+                CurrencyService.sendCurrency(u, 2, "聊天室活动-鱼鱼标记赛-奖品");
+                CurrencyService.sendCurrencyFree(u, 33, "聊天室活动-鱼鱼标记赛-奖品");
+            }
+        } else {
+            Fish.sendMsg("`鱼鱼标记赛` " + DateUtil.formatDay(LocalDate.now()) + " 赛结束, 很遗憾今天没有玩家获胜~ 渔民们明天见啦!");
+        }
+    }
 
     /**
      * 午间活动 片段雨
@@ -175,7 +230,7 @@ public class TaskCenter {
      */
     @Scheduled(cron = "0 30 0/4 * * ?")
     public void zfServerState() {
-        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "FWQZT"))){
+        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "FWQZT"))) {
             Fish.sendCMD("执法 服务器状态");
         }
     }
@@ -185,7 +240,7 @@ public class TaskCenter {
      */
     @Scheduled(cron = "30 0 0/6 * * ?")
     public void zfWeiHu() {
-        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "WH"))){
+        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "WH"))) {
             Fish.sendCMD("执法 维护");
         }
     }
@@ -195,7 +250,7 @@ public class TaskCenter {
      */
     @Scheduled(cron = "0 0 0/12 * * ?")
     public void zfRefresh() {
-        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "SXHC"))){
+        if (StringUtils.isBlank(RedisUtil.get(Const.PATROL_LIMIT_PREFIX + "SXHC"))) {
             Fish.sendCMD("执法 刷新缓存");
         }
     }

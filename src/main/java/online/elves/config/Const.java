@@ -105,6 +105,11 @@ public class Const {
     public static List<String> CHAT_ROOM_LEVEL_NAME = Lists.newArrayList("炼气修士", "筑基修士", "金丹修士", "元婴修士", "化神修士", "合体修士", "大乘修士", "渡劫修士", "天仙", "罗天上仙", "大罗金仙", "九天玄仙", "仙君", "仙帝", "人神", "天神", "神王", "天尊", "鱼祖");
 
     /**
+     * biu鱼大赛
+     */
+    public static List<Integer> CHAT_ROOM_BIU_FISH = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+
+    /**
      * 宵禁解除 早上八点
      */
     public static LocalTime start = LocalTime.of(8, 0, 0);
@@ -113,6 +118,10 @@ public class Const {
      * 宵禁开始 晚上七点半
      */
     public static LocalTime end = LocalTime.of(19, 30, 0);
+    /**
+     * 中午十二点
+     */
+    public static LocalTime noon = LocalTime.of(12, 0, 0);
 
     /**
      * 迎新帖子回复记录
