@@ -597,6 +597,7 @@ public class FService {
         QueryWrapper<RpOpenLog> roCond = new QueryWrapper<>();
         // 所有待处理的
         roCond.eq("opened", 0);
+        roCond.last(" limit 10");
         // 获取所有对象
         List<RpOpenLog> rpOpenLogs = rpOpenLogMapper.selectList(roCond);
         if (CollUtil.isEmpty(rpOpenLogs)) {
@@ -651,6 +652,8 @@ public class FService {
         } else {
             fResp = Fish.openRedPacket(oid, false);
         }
+        // 当前时间
+        LocalDateTime now = LocalDateTime.now();
         log.info("红包打开响应=>{}", fResp);
         // 获取列表
         JSONArray who;
@@ -661,6 +664,12 @@ public class FService {
             Integer code = rp.getInteger("code");
             if (Objects.nonNull(code) && code == -1) {
                 log.info("打开红包失败...{}", oid);
+                // 更新下记录. 放弃了...
+                rpOpenLogs.stream().filter(z -> z.getOpened() == 0).forEach(x -> {
+                    x.setOpened(2);
+                    x.setUpdateTime(now);
+                    rpOpenLogMapper.updateById(x);
+                });
                 return;
             }
             // 获取列表
@@ -668,10 +677,14 @@ public class FService {
         } catch (Exception e) {
             e.printStackTrace();
             Fish.send2User(RedisUtil.get(Const.ADMIN), "红包记录异常, 没有原始记录信息...B..." + oid);
+            // 更新下记录. 放弃了...
+            rpOpenLogs.stream().filter(z -> z.getOpened() == 0).forEach(x -> {
+                x.setOpened(2);
+                x.setUpdateTime(now);
+                rpOpenLogMapper.updateById(x);
+            });
             return;
         }
-        // 当前时间
-        LocalDateTime now = LocalDateTime.now();
         // 用户打开记录
         Map<Integer, RpOpenLog> userRpOpen = rpOpenLogs.stream().collect(Collectors.toMap(RpOpenLog::getUserNo, Function.identity()));
         // 校验一下 who
@@ -685,7 +698,7 @@ public class FService {
             // 获取人
             JSONObject w = (JSONObject) o;
             // 获取用户信息
-            User user = getUser(w.getString("userName"));
+            User user = getUser(null, w.getString("userName"));
             // 用户打开记录
             RpOpenLog openLog = userRpOpen.get(user.getUserNo());
             // 不为空则更新

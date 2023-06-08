@@ -154,25 +154,29 @@ public class TaskCenter {
             }
         }
     }
+
     /**
      * 鱼鱼标记赛
      */
-    @Scheduled(cron = "0 0 8 * * ?")
-    public void clock8() {
+    @Scheduled(cron = "0 0 8,10,12,14,16 * * ?")
+    public void clockBiuFish() {
+        LocalDateTime now = LocalDateTime.now();
         // 开始预告
-        Fish.sendMsg("# https://fishpi.cn/article/1685604556543 开始报名啦~ 渔民大人快冲呀!");
+        Fish.sendMsg("### https://fishpi.cn/article/1685604556543 `" + DateUtil.formatDay(now.toLocalDate()) + "` 的 `" + now.getHour() + "点`赛 开始报名啦~ 渔民大人快冲呀!");
     }
+
     /**
      * 鱼鱼标记赛
      */
-    @Scheduled(cron = "30 0 12 * * ?")
+    @Scheduled(cron = "30 15 9,11,13,15,17 * * ?")
     public void biuFish() {
+        LocalDateTime now = LocalDateTime.now();
         // 开始预告
-        Fish.sendMsg("`鱼鱼标记赛`开始统计!");
+        Fish.sendMsg("`鱼鱼标记赛`---`" + (now.getHour() - 1) + "点`赛 开始统计!");
         // 标记前缀
         String prefix = "CR:GAME:BIU:";
         // 标记对象
-        StringBuilder record = new StringBuilder("`鱼鱼标记赛`参与详情:").append("\n\n");
+        StringBuilder record = new StringBuilder("`鱼鱼标记赛`---`" + (now.getHour() - 1) + "点`赛  参与详情:").append("\n\n");
         for (int i = 1; i < 17; i++) {
             String tmp = "无";
             // 标记人
@@ -193,14 +197,14 @@ public class TaskCenter {
         if (StringUtils.isNotBlank(biuUsers)) {
             // 获胜玩家
             List<String> uList = JSON.parseArray(biuUsers, String.class);
-            Fish.sendMsg("`鱼鱼标记赛` " + DateUtil.formatDay(LocalDate.now()) + " 赛结束, 让我们恭喜玩家[" + Strings.join(uList, ',') + "](奖品稍后发放, 请注意查收私信!)~ 渔民们明天见啦!");
+            Fish.sendMsg("`鱼鱼标记赛`---`" + (now.getHour() - 1) + "点`赛 结束, 让我们恭喜玩家[" + Strings.join(uList, ',') + "](奖品稍后发放, 请注意查收私信!)~ 渔民们下次见啦!");
             // 循环发奖
             for (String u : uList) {
-                CurrencyService.sendCurrency(u, 2, "聊天室活动-鱼鱼标记赛-奖品");
-                CurrencyService.sendCurrencyFree(u, 33, "聊天室活动-鱼鱼标记赛-奖品");
+                CurrencyService.sendCurrency(u, 2, "聊天室活动-鱼鱼标记赛-奖品(`" + (now.getHour() - 1) + "点`赛)");
+                CurrencyService.sendCurrencyFree(u, 33, "聊天室活动-鱼鱼标记赛-奖品(`" + (now.getHour() - 1) + "点`赛)");
             }
         } else {
-            Fish.sendMsg("`鱼鱼标记赛` " + DateUtil.formatDay(LocalDate.now()) + " 赛结束, 很遗憾今天没有玩家获胜~ 渔民们明天见啦!");
+            Fish.sendMsg("`鱼鱼标记赛`---`" + (now.getHour() - 1) + "点`赛 结束, 很遗憾没有渔民获胜~ 下次见啦!");
         }
     }
 

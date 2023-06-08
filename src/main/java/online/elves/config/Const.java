@@ -18,9 +18,9 @@ public class Const {
     public static String ADMIN = "ADMIN";
 
     /**
-     * 机器人列表  小智 小冰 精灵
+     * 机器人列表  小智 小冰 精灵 艾达 鸽
      */
-    public static List<Integer> ROBOT_LIST = Arrays.asList(4076, 8888, 521, 8887);
+    public static List<Integer> ROBOT_LIST = Arrays.asList(4076, 8888, 521, 8887, 13877);
     /**
      * 大佬列表
      */
@@ -108,6 +108,10 @@ public class Const {
      * biu鱼大赛
      */
     public static List<Integer> CHAT_ROOM_BIU_FISH = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+    /**
+     * biu鱼大赛时间间隔
+     */
+    public static List<Integer> CHAT_ROOM_BIU_FISH_TIMES = Lists.newArrayList(8, 10, 12, 14, 16);
 
     /**
      * 宵禁解除 早上八点
