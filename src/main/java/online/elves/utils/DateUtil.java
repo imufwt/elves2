@@ -2,6 +2,7 @@ package online.elves.utils;
 
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import online.elves.config.Const;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
@@ -741,24 +742,26 @@ public class DateUtil {
         Period between = Period.between(birthday, LocalDate.now());
         return between.getYears() + "岁 " + between.getMonths() + "个月 " + between.getDays() + "天";
     }
-    
+
     /**
      * 转化分钟为年月日
+     *
      * @param onlineMinute
      * @return
      */
     public static String transferMinutes(Integer onlineMinute) {
-        if (onlineMinute < 1){
+        if (onlineMinute < 1) {
             return "0 分钟";
         }
-        int day = onlineMinute/(24*60);
-        int hour = (onlineMinute%(24*60))/60;
-        int minute = (onlineMinute%(24*60))%60;
-        return day+" 天 "+hour+" 小时 "+minute+" 分钟";
+        int day = onlineMinute / (24 * 60);
+        int hour = (onlineMinute % (24 * 60)) / 60;
+        int minute = (onlineMinute % (24 * 60)) % 60;
+        return day + " 天 " + hour + " 小时 " + minute + " 分钟";
     }
-    
+
     /**
      * 获取鱼历
+     *
      * @return
      */
     public static String getFishDay() {
@@ -769,5 +772,26 @@ public class DateUtil {
         // 组合后的鱼历
         localDate = LocalDate.of(localDate.getYear() - 2020, localDate.getMonth(), localDate.getDayOfMonth());
         return formatDay(LocalDateTime.of(localDate, now));
+    }
+
+    /**
+     * 猜拳限制
+     *
+     * @return
+     */
+    public static boolean isRpsLock() {
+        // 当前时间
+        LocalDateTime now = LocalDateTime.now();
+        // 今天
+        LocalDate ld = now.toLocalDate();
+        // 8:30 - 11:30
+        if (isBetween(now, LocalDateTime.of(ld, Const.eight30), LocalDateTime.of(ld, Const.eleven30))) {
+            return true;
+        }
+        // 13:30 - 18:00
+        if (isBetween(now, LocalDateTime.of(ld, Const.thirteen30), LocalDateTime.of(ld, Const.eighteen))) {
+            return true;
+        }
+        return false;
     }
 }

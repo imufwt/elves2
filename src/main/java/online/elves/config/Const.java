@@ -107,7 +107,7 @@ public class Const {
     /**
      * biu鱼大赛
      */
-    public static List<Integer> CHAT_ROOM_BIU_FISH = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+    public static List<Integer> CHAT_ROOM_BIU_FISH = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8);
     /**
      * biu鱼大赛时间间隔
      */
@@ -126,6 +126,10 @@ public class Const {
      * 中午十二点
      */
     public static LocalTime noon = LocalTime.of(12, 0, 0);
+    public static LocalTime eight30 = LocalTime.of(8, 30, 0);
+    public static LocalTime eleven30 = LocalTime.of(11, 30, 0);
+    public static LocalTime thirteen30 = LocalTime.of(13, 30, 0);
+    public static LocalTime eighteen = LocalTime.of(18, 00, 0);
 
     /**
      * 迎新帖子回复记录

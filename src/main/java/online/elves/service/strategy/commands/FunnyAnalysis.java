@@ -43,7 +43,7 @@ public class FunnyAnalysis extends CommandAnalysis {
     /**
      * 关键字
      */
-    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "15", "欧皇们", "非酋们", "探路者", "触发词", "520", "标记");
+    private static final List<String> keys = Arrays.asList("去打劫", "笑话", "捞鱼丸", "等级", "发个红包", "V50", "v50", "VME50", "vivo50", "今日水分", "15", "欧皇们", "非酋们", "探路者", "触发词", "520", "标记", "看看冰柜", "爱的回馈");
 
     /**
      * 打劫概率
@@ -154,6 +154,9 @@ public class FunnyAnalysis extends CommandAnalysis {
                     }
                 }
                 break;
+            case "看看冰柜":
+                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " 偷偷给你看哦~\n\n> 冰柜里还有`" + RedisUtil.get("CR:GAME:BIU:JACKPOT") + "`个鱼翅");
+                break;
             case "标记":
                 // 当前时间
                 LocalDateTime biuNow = LocalDateTime.now();
@@ -161,7 +164,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                 LocalTime localTime = biuNow.toLocalTime();
                 // 当前小时数
                 int hour = localTime.getHour();
-                // 只有上午有效
+                // 宵禁内 8 10 12 14 16 有效
                 if (!Const.CHAT_ROOM_BIU_FISH_TIMES.contains(hour)) {
                     Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " biu~🐟 活动尚未开始或者正在结算中~");
                 } else {
@@ -170,19 +173,22 @@ public class FunnyAnalysis extends CommandAnalysis {
                     if (StringUtils.isNotBlank(biuCount)) {
                         // 每日游戏
                         String biuKey = "CR:GAME:BIU:LIMIT:" + userName;
-                        // 是财阀. 每天第一次打劫 概率获得sth.
+                        // 还没标记过
                         if (StringUtils.isBlank(RedisUtil.get(biuKey))) {
-                            // 下一个小时的45分过期
-                            int timeOut = Long.valueOf(Duration.between(biuNow, LocalDateTime.of(biuNow.toLocalDate(), LocalTime.of(hour + 1, 45, 0))).getSeconds()).intValue();
-                            // 过期对象
-                            RedisUtil.set(biuKey, userName, timeOut);
                             // 检查对象
                             if (RegularUtil.isNum1Max(commandDesc) && Const.CHAT_ROOM_BIU_FISH.contains(Integer.valueOf(commandDesc))) {
                                 // 扣鱼翅
-                                if (Integer.valueOf(biuCount) < 1) {
-                                    Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " 糟糕, 渔民大人! 你没有鱼翅了~");
+                                if (Integer.parseInt(biuCount) < 2) {
+                                    Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " 糟糕, 渔民大人! 你鱼翅不够了~(需要`2鱼翅`参与哦!)");
                                 } else {
-                                    CurrencyService.sendCurrency(userName, -1, "聊天室活动-鱼鱼标记赛-报名费-标记[" + commandDesc + "]-(`" + hour + "点`赛)");
+                                    // 下一个小时的45分过期
+                                    int timeOut = Long.valueOf(Duration.between(biuNow, LocalDateTime.of(biuNow.toLocalDate(), LocalTime.of(hour + 1, 45, 0))).getSeconds()).intValue();
+                                    // 过期对象
+                                    RedisUtil.set(biuKey, userName, timeOut);
+                                    // 扣费
+                                    CurrencyService.sendCurrency(userName, -2, "聊天室活动-鱼鱼标记赛-报名费-标记[" + commandDesc + "]-(`" + hour + "点`赛)");
+                                    // 放入冰柜
+                                    RedisUtil.modify("CR:GAME:BIU:JACKPOT", 3);
                                     // 标记鱼鱼
                                     String biu = "CR:GAME:BIU:" + commandDesc;
                                     // 标记列表
@@ -197,7 +203,7 @@ public class FunnyAnalysis extends CommandAnalysis {
                                     }
                                 }
                             } else {
-                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " 你标记的是什么呀~鱼鱼编号`1-16`哦~");
+                                Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " 你标记的是什么呀~鱼鱼编号`1-8`哦~");
                             }
                         } else {
                             Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " 你已经标记过鱼鱼啦! 耐心等待精灵biu吧!");
@@ -261,6 +267,32 @@ public class FunnyAnalysis extends CommandAnalysis {
                     // 不为空 啥也不做....
                 }
                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + Words.random("r"));
+                break;
+            case "爱的回馈":
+                // 财阀标记
+                String loveCount = RedisUtil.get(Const.CURRENCY_TIMES_PREFIX + userName);
+                if (StringUtils.isNotBlank(loveCount)) {
+                    // 幸运编码
+                    String lKey = "love:return:" + userName;
+                    // 是财阀. 每天第一次打劫 概率获得sth.
+                    if (StringUtils.isBlank(RedisUtil.get(lKey))) {
+                        if (IceNet.getUserIntimacy(userName) > 10240) {
+                            // 当前时间
+                            LocalDateTime now = LocalDateTime.now();
+                            // 第二天0点过期
+                            RedisUtil.set(lKey, userName, Long.valueOf(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).getSeconds()).intValue());
+                            int money = new SecureRandom().nextInt(32) + 32;
+                            Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " 小冰感受到了你的爱, 让我谢谢你哦~");
+                            Fish.sendSpecify(userName, money, userName + ", 爱的回馈!");
+                        } else {
+                            Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 渔民大人~ 和小冰的亲密度要大于`10240`才会每天有`爱的回馈`呢, 加油呀!~");
+                        }
+                    } else {
+                        Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 嘻嘻~ 今天回馈过了呢~");
+                    }
+                } else {
+                    Fish.sendMsg("亲爱的 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 你还没有成为我的渔民大人呐~");
+                }
                 break;
             case "笑话":
                 Fish.sendMsg("@" + userName + " " + CrLevel.getCrLvName(userName) + " " + "  \n\n" + Joke.getJoke());

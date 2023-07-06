@@ -10,6 +10,7 @@ import online.elves.message.model.CrMsg;
 import online.elves.message.model.CrRedPacket;
 import online.elves.service.FService;
 import online.elves.third.fish.Fish;
+import online.elves.utils.DateUtil;
 import online.elves.utils.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
@@ -112,6 +113,10 @@ public class CrListener {
                         if ("specify".equals(type) && crRedPacket.getRecivers().contains(Objects.requireNonNull(RedisUtil.get(Const.ELVES_MAME))) && money > 31) {
                             // 购买鱼翅
                             fService.recordCurrency(oId, userName, money);
+                        }
+                        // 猜拳锁
+                        if ("rockPaperScissors".equals(type) && DateUtil.isRpsLock()) {
+                            RedisUtil.set("CR:RPS:LOCK", DateUtil.nowStr(), 30);
                         }
                         // 保存红包记录
                         fService.recordRp(oId, userName, money, crRedPacket.tfType());

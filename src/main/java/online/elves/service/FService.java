@@ -366,7 +366,11 @@ public class FService {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("这可不能没了...{}", e.getMessage());
-            Fish.send2User(RedisUtil.get(Const.ADMIN), " 老板, 红包打开记录入库失败啦. 快来救命呀~ OID:" + oId);
+            String content = " 老板, 红包打开记录入库失败啦. 快来救命呀~ OID:" + oId + " => " + JSON.toJSONString(e.getMessage()) + " => " + JSON.toJSONString(Arrays.stream(e.getStackTrace()).allMatch(x -> x.toString().contains("elves")));
+            if (content.length() > 1024) {
+                content = content.substring(0, 1023);
+            }
+            Fish.send2User(RedisUtil.get(Const.ADMIN), content);
         }
     }
 
@@ -676,7 +680,7 @@ public class FService {
             who = rp.getJSONArray("who");
         } catch (Exception e) {
             e.printStackTrace();
-            Fish.send2User(RedisUtil.get(Const.ADMIN), "红包记录异常, 没有原始记录信息...B..." + oid);
+            Fish.send2User(RedisUtil.get(Const.ADMIN), "红包记录异常, 没有原始记录信息...B..." + oid + " 原始信息 => " + JSON.toJSONString(fResp));
             // 更新下记录. 放弃了...
             rpOpenLogs.stream().filter(z -> z.getOpened() == 0).forEach(x -> {
                 x.setOpened(2);

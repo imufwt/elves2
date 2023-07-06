@@ -36,8 +36,8 @@ public class RankingAnalysis extends CommandAnalysis {
      * 关键字
      */
     private static final List<String> keys = Arrays.asList(
-            "2", "3", "4", "5", "6", "7",
-            "小冰召唤师", "点歌大王", "朗读小玩童", "图王", "互动指数", "弹幕巨头",
+            "2", "3", "4", "5", "6", "7", "8", "9",
+            "小冰召唤师", "点歌大王", "朗读小玩童", "图王", "互动指数", "弹幕巨头", "天选之子", "天降横财",
             "10", "11", "12", "13", "14",
             "兑换日榜", "兑换周榜", "兑换月榜", "兑换年榜", "兑换总榜",
             "20", "21", "22", "23", "24",
@@ -85,6 +85,14 @@ public class RankingAnalysis extends CommandAnalysis {
             case "7":
             case "弹幕巨头":
                 type = 7;
+                break;
+            case "8":
+            case "天选之子":
+                type = 8;
+                break;
+            case "9":
+            case "天降横财":
+                type = 9;
                 break;
             case "10":
             case "兑换日榜":
@@ -264,6 +272,12 @@ public class RankingAnalysis extends CommandAnalysis {
                 case 7:
                     msg.append("弹幕之王~...不就是点积分么? 主打一个炫酷~\n");
                     break;
+                case 8:
+                    msg.append("天选之子~...不就biu个🐟嘛! 我一biu一个准!\n");
+                    break;
+                case 9:
+                    msg.append("天降横财~...鱼翅? 啊~ 好多鱼翅!\n");
+                    break;
                 case 10:
                     msg.append("渔场日榜, 你的每一个鱼翅都闪耀着无上的光芒~\n");
                     break;
@@ -355,8 +369,6 @@ public class RankingAnalysis extends CommandAnalysis {
                 case 5:
                 case 6:
                 case 7:
-                case 8:
-                case 9:
                 case 10:
                 case 20:
                 case 25:
@@ -384,6 +396,8 @@ public class RankingAnalysis extends CommandAnalysis {
                 case 38:
                     assert ld != null;
                     return getRank10(StrUtils.getKey(Const.RANKING_YEAR_PREFIX, String.valueOf(i), String.valueOf(ld.getYear())), msg, no, i);
+                case 8:
+                case 9:
                 case 14:
                 case 24:
                 case 29:
@@ -450,6 +464,12 @@ public class RankingAnalysis extends CommandAnalysis {
     private void buildTitle(StringBuilder msg, int type) {
         msg.append(" ");
         switch (type) {
+            case 8:
+                genTitle(msg, "天选之子", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
+            case 9:
+                genTitle(msg, "横财之主", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
+                break;
             case 10:
                 genTitle(msg, "今日渔场主", "https://img1.voc.com.cn/UpLoadFile/2017/08/03/201708031117037846.jpg");
                 break;

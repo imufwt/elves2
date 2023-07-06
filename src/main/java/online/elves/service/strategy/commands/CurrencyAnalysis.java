@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -60,7 +61,7 @@ public class CurrencyAnalysis extends CommandAnalysis {
                     if (lTimes < 0) {
                         lTimes = 0;
                     }
-                    Fish.sendMsg("尊敬的渔民大人 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . " +
+                    Fish.sendMsg("尊敬的渔民大人 @" + userName + " " + CrLevel.getCrLvName(userName) + " " + " . 今天背包冷气很足~" +
                             "\n\n您的`鱼翅`还有 ...`" + times + "`个~  `鱼丸`还有 ...`" + lTimes + "`个~" +
                             "\n\n > 1 `鱼翅` == 10 `鱼丸`");
                 }
@@ -77,19 +78,25 @@ public class CurrencyAnalysis extends CommandAnalysis {
                     // 啥也不做
                     Fish.sendMsg("亲爱的 @" + userName + " . 您的鱼翅已耗尽咯(~~你拿什么跟我斗╭(╯^╰)╮~~)");
                 } else {
-                    // 加锁  增加 CD
-                    if (StringUtils.isBlank(RedisUtil.get("CURRENCY_FIGHT_LIMIT"))) {
+                    // 加锁  增加 CD  聊天室猜拳锁
+                    if (StringUtils.isBlank(RedisUtil.get("CURRENCY_FIGHT_LIMIT")) && StringUtils.isBlank(RedisUtil.get("CR:RPS:LOCK"))) {
+                        // 间隔
+                        int st = new SecureRandom().nextInt(10) + 30;
                         // 发送设置
-                        Fish.sendMsg("亲爱的 @" + userName + " . 准备好了么? 决斗红包来喽(不能指定, 先到先得) `决斗全局锁, 下次召唤请...10...秒后(一分钟能发十个. 咱们都冷静下)` ~");
+                        Fish.sendMsg("亲爱的 @" + userName + " . 准备好了么? 决斗红包来喽(不能指定, 先到先得) `决斗全局锁, 下次召唤请..." + st + "...秒后(冷静下, 慢慢来)` ~");
                         // 发送猜拳红包
                         Fish.sendRockPaperScissors(Objects.equals(commandKey, "决斗") ? userName : null, 32);
                         // 设置次数减一
                         CurrencyService.sendCurrency(userName, -1, "聊天室活动-猜拳决斗");
                         // 加锁 一分钟一个
-                        RedisUtil.set("CURRENCY_FIGHT_LIMIT", "limit", 10);
+                        RedisUtil.set("CURRENCY_FIGHT_LIMIT", "limit", st);
                     } else {
                         // 啥也不做
-                        Fish.sendMsg("亲爱的 @" + userName + " . 美酒虽好, 可也不要贪杯哦~");
+                        if (StringUtils.isNotBlank(RedisUtil.get("CR:RPS:LOCK"))){
+                            Fish.sendMsg("亲爱的 @" + userName + " .现在是聊天高峰期，全局每30秒只允许发送一个猜拳红包，晚会儿咱们再Solo哈~");
+                        }else {
+                            Fish.sendMsg("亲爱的 @" + userName + " . 美酒虽好, 可也不要贪杯哦~");
+                        }
                     }
                 }
                 break;
